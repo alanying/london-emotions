@@ -18,8 +18,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=description, usage=usage)
     args = parser.parse_args()
     folder_source, _ = split(london-emotions.__file__)
-    df = pd.read_csv('{}/data/data.csv.gz'.format(folder_source))
-    print('  london-emotions/data/data.csv.gz Loaded')
+    df = pd.read_csv('{}/data/data_train.csv'.format(folder_source))
+    print('  london-emotions/data/data.csv Loaded')
 
     res = clean_data(df)
     res.to_csv('out.csv', index=False)

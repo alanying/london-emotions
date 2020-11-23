@@ -56,6 +56,6 @@ if __name__ == '__main__':
     # For introspections purpose to quickly get this functions on ipython
     import london-emotions
     folder_source, _ = split(london-emotions.__file__)
-    df = pd.read_csv('{}/data/data.csv.gz'.format(folder_source))
+    df = pd.read_csv('{}/data/data_train.csv'.format(folder_source))
     clean_data = clean_data(df)
     print(' dataframe cleaned')
