@@ -41,11 +41,7 @@ def clean_data(data):
         lambda x: word_tokenize(x)
         )
 
-    # Lemmatize words
-    lemmatizer = WordNetLemmatizer()
-    data['clean_text'] = data['clean_text'].apply(
-        lambda x: ' '.join(lemmatizer.lemmatize(word) for word in x)
-        )
+
 
 
     # Return data
