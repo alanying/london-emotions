@@ -10,3 +10,5 @@ black
 yapf
 python-gitlab
 twine
+mlflow
+memoized_property
