@@ -20,7 +20,7 @@ def retrieve_data(local=True, optimize=False, **kwargs):
         path = "../raw_data/emotion_data.csv"
     # else:
     #     path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
-    df = pd.read_csv(path, nrows=100)
+    df = pd.read_csv(path, nrows=1000)
     return df
 
 def clean_data(data):
@@ -57,6 +57,7 @@ def clean_data(data):
     data['clean_text'] = data['clean_text'].apply(
         lambda x: ' '.join(lemmatizer.lemmatize(word) for word in x)
         )
+
     # Return data
     return data
 if __name__ == '__main__':

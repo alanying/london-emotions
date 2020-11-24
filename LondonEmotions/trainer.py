@@ -5,7 +5,6 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import joblib
@@ -20,7 +19,6 @@ class Trainer():
 
     def __init__(self, X, y, **kwargs):
         self.pipeline = None
-        self.vectorizer = None
         self.kwargs = kwargs
         self.experiment_name = kwargs.get("experiment_name", self.EXPERIMENT_NAME)  # cf doc above
         self.mlflow = kwargs.get('mlflow', False)
@@ -35,16 +33,13 @@ class Trainer():
         self.log_kwargs_params()
 
     def set_pipeline(self):
-        self.pipeline = MultinomialNB()
-        self.vectorizer = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
+        # ADD MODEL HERE
+        pass
 
     @simple_time_tracker
     def train(self):
-        self.set_pipeline()
-
-        X_train_vect = self.vectorizer.fit(self.X_train)
-        self.pipeline.fit(X_train_vect, self.y_train)
-        self.mlflow_log_metric("train_time", int(time.time() - tic))
+        # TRAIN HERE
+        pass
 
     def evaluate(self):
         f1_train = self.compute_score(self.X_train, self.y_train)
@@ -57,9 +52,7 @@ class Trainer():
             print("f1 train: {}".format(f1_train))
 
     def compute_score(self, X_test, y_test):
-        X_test_vect = self.vectorizer.transform(X_test)
-        y_pred = self.pipeline.predict(X_test_vect)
-
+        y_pred = self.pipeline.predict(self.X_test)
         f1_score = f1_score(self.y_val, y_pred, average='micro') * 100
         return f1_score
 

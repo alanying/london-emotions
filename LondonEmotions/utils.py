@@ -1,3 +1,4 @@
+import time
 
 def simple_time_tracker(method):
     def timed(*args, **kw):

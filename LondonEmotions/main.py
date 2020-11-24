@@ -21,4 +21,10 @@ if __name__ == "__main__":
     # Train and save model
     t = Trainer(X=X_train, y=y_train, **default_params)
     del X_train, y_train
-    print("############  DONE model   ############")
+    print("############  Training model   ############")
+    t.train()
+    # print("############  Evaluating model   ############")
+    # t.evaluate()
+    # print("############  Training model   ############")
+    # t.save_model()
+
