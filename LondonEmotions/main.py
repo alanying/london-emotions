@@ -8,7 +8,7 @@ default_params = dict(nrows=40000,
                       optimize=True,
                       estimator="NB",
                       mlflow=True,  # set to True to log params to mlflow
-                      experiment_name="EmotionModel",
+                      experiment_name="LondonEmotions",
                       split=True)
 
 if __name__ == "__main__":

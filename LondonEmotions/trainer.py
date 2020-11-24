@@ -22,6 +22,7 @@ class Trainer():
         self.pipeline = None
         self.vectorizer = None
         self.kwargs = kwargs
+        self.experiment_name = kwargs.get("experiment_name", self.EXPERIMENT_NAME)  # cf doc above
         self.mlflow = kwargs.get('mlflow', False)
         self.X_train = X
         self.y_train = y
@@ -32,7 +33,6 @@ class Trainer():
             train_test_split(self.X_train, self.y_train, test_size=0.15)
 
         self.log_kwargs_params()
-        self.log_machine_specs()
 
     def set_pipeline(self):
         self.pipeline = MultinomialNB()
