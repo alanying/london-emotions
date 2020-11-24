@@ -69,8 +69,8 @@ def clean_data(data):
 
 if __name__ == '__main__':
     # For introspections purpose to quickly get this functions on ipython
-    import london-emotions
-    folder_source, _ = split(london-emotions.__file__)
+    #import london-emotions
+    #folder_source, _ = split(london-emotions.__file__)
     df = retrieve_data()
     clean_data = clean_data(df)
     print(' dataframe cleaned')
