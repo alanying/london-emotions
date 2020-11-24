@@ -21,8 +21,13 @@ def clean_data(data):
     """
 
     # Lowercase text
-    data['clean_text'] = data['text'].apply(
+    data['clean_text'] = data['Text'].apply(
         lambda x: x.lower()
+        )
+
+    # Strip whitespace
+    data['clean_text'] = data['clean_text'].apply(
+        lambda x: x.strip()
         )
 
     # Remove numbers
@@ -35,14 +40,22 @@ def clean_data(data):
         lambda x: ''.join(let for let in x if not let in string.punctuation)
         )
 
-    # Remove stopwords
-    stop_words = set(stopwords.words('english'))
+    # Tokenization with nltk
     data['clean_text'] = data['clean_text'].apply(
         lambda x: word_tokenize(x)
+    )
+
+    # Remove stopwords
+    # stop_words = set(stopwords.words('english'))
+    # data['clean_text'] = data['clean_text'].apply(
+    #     lambda x: [word for word in x if word not in stop_words]
+    #     )
+
+    # Lemmatizing with nltk
+    lemmatizer = WordNetLemmatizer()
+    data['clean_text'] = data['clean_text'].apply(
+        lambda x: ' '.join(lemmatizer.lemmatize(word) for word in x)
         )
-
-
-
 
     # Return data
     return data
