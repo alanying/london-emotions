@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 
 class Trainer(object):
-    def __init__(self, X, y):
+    def __init__(self, X, y, **kwargs):
         self.X_train = X
         self.y_train = y
         del X, y
