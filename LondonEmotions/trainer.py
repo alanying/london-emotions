@@ -1,13 +1,14 @@
 from LondonEmotions.utils import simple_time_tracker
 
 from memoized_property import memoized_property
+import mlflow
+from mlflow.tracking import MlflowClient
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import joblib
-import mlflow
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
