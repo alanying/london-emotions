@@ -17,12 +17,13 @@ class Trainer():
 
     def __init__(self, X, y, **kwargs):
         self.pipeline = None
+        self.vectorizer = None
         self.kwargs = kwargs
         self.mlflow = kwargs.get('mlflow', False)
         self.X_train = X
         self.y_train = y
         del X, y
-        self.split = self.kwargs.get("split", True)  # cf doc above
+        self.split = self.kwargs.get("split", False)  # cf doc above
         if self.split:
             self.X_train, self.X_val, self.y_train, self.y_val = \
             train_test_split(self.X_train, self.y_train, test_size=0.15)
@@ -31,25 +32,33 @@ class Trainer():
         self.log_machine_specs()
 
     def set_pipeline(self):
-        vect = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
-        X_train_vect = vect.fit_transform(self.X_train)
-
         self.pipeline = MultinomialNB()
+        self.vectorizer = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
 
     @simple_time_tracker
     def train(self):
         self.set_pipeline()
+
+        X_train_vect = self.vectorizer.fit(self.X_train)
         self.pipeline.fit(X_train_vect, self.y_train)
         self.mlflow_log_metric("train_time", int(time.time() - tic))
 
+    def evaluate(self):
+        f1_train = self.compute_score(self.X_train, self.y_train)
+        self.mlflow_log_metric("f1_train", f1_train)
+        if self.split:
+            f1_val = self.compute_score(self.X_val, self.y_val, show=True)
+            self.mlflow_log_metric("f1_val", f1_val)
+            print("f1 train: {} || f1 val: {}".format(f1_train, f1_val))
+        else:
+            print("f1 train: {}".format(f1_train))
 
-        self.save_model()
-        print("############  Evaluating model   ############")
-        X_test_vect = vect.transform(self.X_val)
-        ynb_pred = nb.predict(X_test_vect)
-        print("Accuracy: {:.2f}%".format(accuracy_score(self.y_val, ynb_pred) * 100))
-        print("\nF1 Score: {:.2f}".format(f1_score(self.y_val, ynb_pred, average='micro') * 100))
-        print("\nCOnfusion Matrix:\n", confusion_matrix(self.y_val, ynb_pred))
+    def compute_score(self, X_test, y_test):
+        X_test_vect = self.vectorizer.transform(X_test)
+        y_pred = self.pipeline.predict(X_test_vect)
+
+        f1_score = f1_score(self.y_val, y_pred, average='micro') * 100
+        return f1_score
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """

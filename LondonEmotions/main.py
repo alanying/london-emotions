@@ -9,7 +9,7 @@ default_params = dict(nrows=40000,
                       estimator="NB",
                       mlflow=True,  # set to True to log params to mlflow
                       experiment_name="EmotionModel",
-                      split=False)
+                      split=True)
 
 if __name__ == "__main__":
     print("############  Fetching data   ############")
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     df = clean_data(df)
     X_train = df['Emotion']
     y_train = df['Text']
+    # Train and save model
     t = Trainer(X=X_train, y=y_train, **default_params)
     del X_train, y_train
-    print("############  Training model   ############")
-    t.train_predict()
+    print("############  DONE model   ############")
