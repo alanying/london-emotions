@@ -9,11 +9,11 @@ from mlflow.tracking import MlflowClient
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-from TaxiFareModel.params import BUCKET_NAME, MODEL_NAME, MODEL_VERSION
+from google.cloud import storage
+from TaxiFareModel.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
@@ -38,24 +38,14 @@ class Trainer():
 
         self.log_kwargs_params()
 
-    # def set_pipeline(self):
-    #     # ADD MODEL HERE
-    #     pass
-
-    # @simple_time_tracker
-    # def train(self):
-    #     # TRAIN HERE
-    #     pass
     def set_pipeline(self):
-        self.pipeline = MultinomialNB()
-        self.vectorizer = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
+        # ADD MODEL HERE
+        pass
 
     @simple_time_tracker
     def train(self):
-        self.set_pipeline()
-        X_train_vect = self.vectorizer.fit(self.X_train)
-        self.pipeline.fit(X_train_vect, self.y_train)
-        self.mlflow_log_metric("train_time", int(time.time() - tic))
+        # TRAIN HERE
+        pass
 
     def evaluate(self):
         self.X_val = self.vectorizer.transform(self.X_val)
@@ -78,6 +68,16 @@ class Trainer():
         """Save the model into a .joblib """
         joblib.dump(self.pipeline, '../raw_data/model.joblib')
         print("model.joblib saved locally")
+
+        client = storage.Client().bucket(BUCKET_NAME)
+        storage_location = '{}/{}/{}/{}'.format(
+            'models',
+            MODEL_NAME,
+            MODEL_VERSION,
+            'model.joblib')
+        blob = client.blob(storage_location)
+        blob.upload_from_filename(filename='../raw_data/model.joblib')
+        print("model.joblib saved on GCP")
 
     ### MLFlow methods
     @memoized_property
@@ -115,3 +115,4 @@ class Trainer():
         if self.mlflow:
             for k, v in self.kwargs.items():
                 self.mlflow_log_param(k, v)
+
