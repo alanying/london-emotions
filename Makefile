@@ -96,3 +96,9 @@ gcp_submit_training:
 		--runtime-version=${RUNTIME_VERSION} \
 		--region ${REGION} \
 		--stream-logs
+
+LOCAL_PATH = 'raw_data/google-vectors.bin.gz'
+BUCKET_FOLDER = 'word2vec'
+UPLOADED_FILE_NAME = 'google-vectors.bin.gz'
+upload_data:
+	-@gsutil cp ${LOCAL_PATH} gs://${BUCKET_NAME}/${BUCKET_FOLDER}/${UPLOADED_FILE_NAME}

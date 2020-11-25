@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from LondonEmotions.utils import simple_time_tracker
+from LondonEmotions.utils import simple_time_tracker, instantiate_model
 
 from memoized_property import memoized_property
 import mlflow
 from mlflow.tracking import MlflowClient
+import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
@@ -12,8 +13,22 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 
+from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from gensim.utils import simple_preprocess
+import string
+from nltk.corpus import stopwords
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from gensim import models
+
 from google.cloud import storage
-from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
+from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, \
+    BUCKET_TRAIN_DATA_PATH, WORD2VEC_PATH
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
@@ -28,24 +43,85 @@ class Trainer():
         self.kwargs = kwargs
         self.experiment_name = kwargs.get("experiment_name", self.EXPERIMENT_NAME)  # cf doc above
         self.mlflow = kwargs.get('mlflow', False)
-        self.X_train = X
-        self.y_train = y
+        self.local = kwargs.get('local', True)
+        self.X_df = X
+        self.y_df = y
         del X, y
         self.split = self.kwargs.get("split", False)  # cf doc above
         if self.split:
             self.X_train, self.X_val, self.y_train, self.y_val = \
-            train_test_split(self.X_train, self.y_train, test_size=0.15)
+            train_test_split(self.X_df, self.y_df, test_size=0.15)
 
         self.log_kwargs_params()
 
-    def set_pipeline(self):
-        # ADD MODEL HERE
-        pass
-
     @simple_time_tracker
     def train(self):
-        # TRAIN HERE
-        pass
+
+        # Calculate size of train data
+        all_training_words = [word for tokens in self.X_train['tokenized_text'] for word in tokens]
+        training_sentence_lengths = [len(tokens) for tokens in self.X_train['tokenized_text']]
+        training_vocab = sorted(list(set(all_training_words)))
+        # Calculate size of test data
+        all_test_words = [word for tokens in self.X_val['tokenized_text'] for word in tokens]
+        test_sentence_lengths = [len(tokens) for tokens in self.X_val['tokenized_text']]
+        test_vocab = sorted(list(set(all_test_words)))
+        # Load pretrained word2vec
+        if self.local:
+            word2vec_path = 'raw_data/google-vectors.bin.gz'
+        else:
+            word2vec_path = "gs://{}/{}".format(BUCKET_NAME, WORD2VEC_PATH)
+        word2vec = models.KeyedVectors.load_word2vec_format(word2vec_path, binary=True)
+
+        MAX_SEQUENCE_LENGTH = 201
+        EMBEDDING_DIM = 300
+
+        # Train Tokenization
+        tokenizer = Tokenizer(num_words=len(training_vocab), lower=True, char_level=False)
+        tokenizer.fit_on_texts(self.X_train['tokenized_text'].tolist())
+        training_sequences = tokenizer.texts_to_sequences(self.X_train['tokenized_text'].tolist())
+        train_word_index = tokenizer.word_index
+        train_cnn_data = pad_sequences(training_sequences,
+                                       maxlen=MAX_SEQUENCE_LENGTH)
+
+        # Test Tokenization
+        train_embedding_weights = np.zeros((len(train_word_index)+1, EMBEDDING_DIM))
+        for word,index in train_word_index.items():
+            train_embedding_weights[index,:] = word2vec[word] if word in word2vec else np.random.rand(EMBEDDING_DIM)
+        test_sequences = tokenizer.texts_to_sequences(self.X_val['tokenized_text'].tolist())
+        test_cnn_data = pad_sequences(test_sequences, maxlen=MAX_SEQUENCE_LENGTH)
+
+        # instantiate model
+        model = instantiate_model(train_embedding_weights,
+                                MAX_SEQUENCE_LENGTH,
+                                len(train_word_index)+1,
+                                EMBEDDING_DIM,
+                                5)
+
+        # Prepare mapping for the sentiment
+        sentiment_coding = {'anger': 0 , 'joy': 4, 'worry': 2, 'sad': 1 , 'neutral': 3}
+
+        # apply mapping
+        y_train_coded = self.y_train['Emotion'].map(sentiment_coding)
+        y_test_coded= self.y_val['Emotion'].map(sentiment_coding)
+
+        # Transform the numbers to categories
+        y_train_cat = to_categorical(y_train_coded)
+        y_test_cat = to_categorical(y_test_coded)
+
+        num_epochs = 10
+        batch_size = 32
+        X_train_model = train_cnn_data
+        y_train_model = y_train_cat
+
+        print('####### Training model NOW #######')
+
+        es = EarlyStopping(patience=10, restore_best_weights=True)
+        history = model.fit(X_train_model, y_train_model,
+                    validation_split=0.3,
+                    batch_size=batch_size,
+                    epochs=num_epochs,
+                    verbose=1
+                   )
 
     def evaluate(self):
         self.X_val = self.vectorizer.transform(self.X_val)
@@ -60,7 +136,7 @@ class Trainer():
             print("f1 train: {}".format(f1_train))
 
     def compute_score(self, X_test, y_test):
-        y_pred = self.pipeline.predict(self.X_test)
+        y_pred = self.pipeline.predict(self.X_val)
         f1_score = f1_score(self.y_val, y_pred, average='micro') * 100
         return f1_score
 
