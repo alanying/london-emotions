@@ -1,7 +1,6 @@
 pip>=9
 setuptools>=26
 wheel>=0.29
-pandas
 nltk
 pytest
 coverage

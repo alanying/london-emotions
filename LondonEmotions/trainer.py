@@ -13,7 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 
 from google.cloud import storage
-from TaxiFareModel.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
+from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
