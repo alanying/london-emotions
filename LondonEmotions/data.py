@@ -58,6 +58,9 @@ def clean_data(data):
         lambda x: ' '.join(lemmatizer.lemmatize(word) for word in x)
         )
 
+    # Tokenizing text
+    data['tokenized_text'] = [simple_preprocess(line, deacc=True) for line in data['clean_text']]
+
     # Return data
     return data
 if __name__ == '__main__':
