@@ -41,21 +41,10 @@ class Trainer():
     #     # TRAIN HERE
     #     pass
 
-    def set_pipeline(self):
-        self.pipeline = MultinomialNB()
-        self.vectorizer = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
-​
-    @simple_time_tracker
-    def train(self):
-        self.set_pipeline()
-​
-        X_train_vect = self.vectorizer.fit(self.X_train)
-        self.pipeline.fit(X_train_vect, self.y_train)
-        self.mlflow_log_metric("train_time", int(time.time() - tic))
-
     def evaluate(self):
         f1_train = self.compute_score(self.X_train, self.y_train)
         self.mlflow_log_metric("f1_train", f1_train)
+
         if self.split:
             f1_val = self.compute_score(self.X_val, self.y_val, show=True)
             self.mlflow_log_metric("f1_val", f1_val)
