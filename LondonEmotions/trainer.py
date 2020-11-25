@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from LondonEmotions.utils import simple_time_tracker
 
 from memoized_property import memoized_property
@@ -8,6 +10,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import joblib
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+from TaxiFareModel.params import BUCKET_NAME, MODEL_NAME, MODEL_VERSION
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
@@ -40,8 +46,19 @@ class Trainer():
     # def train(self):
     #     # TRAIN HERE
     #     pass
+    def set_pipeline(self):
+        self.pipeline = MultinomialNB()
+        self.vectorizer = TfidfVectorizer(sublinear_tf=True, norm='l2', ngram_range=(1, 2))
+
+    @simple_time_tracker
+    def train(self):
+        self.set_pipeline()
+        X_train_vect = self.vectorizer.fit(self.X_train)
+        self.pipeline.fit(X_train_vect, self.y_train)
+        self.mlflow_log_metric("train_time", int(time.time() - tic))
 
     def evaluate(self):
+        self.X_val = self.vectorizer.transform(self.X_val)
         f1_train = self.compute_score(self.X_train, self.y_train)
         self.mlflow_log_metric("f1_train", f1_train)
 
