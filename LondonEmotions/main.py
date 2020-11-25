@@ -3,7 +3,7 @@ from LondonEmotions.trainer import Trainer
 
 default_params = dict(nrows=40000,
                       upload=False,
-                      local=False,  # set to False to get data from GCP (Storage or BigQuery)
+                      local=True,  # set to False to get data from GCP (Storage or BigQuery)
                       gridsearch=False,
                       optimize=True,
                       estimator="NB",
@@ -13,11 +13,11 @@ default_params = dict(nrows=40000,
 
 if __name__ == "__main__":
     print("############  Fetching data   ############")
-    df = retrieve_data()
+    df = retrieve_data(local=True)
     print("############  Cleaning data   ############")
     df = clean_data(df)
-    X_train = df['Emotion']
-    y_train = df['Text']
+    y_train = df[['Emotion']]
+    X_train = df[['tokenized_text']]
     # Train and save model
     t = Trainer(X=X_train, y=y_train, **default_params)
     del X_train, y_train
