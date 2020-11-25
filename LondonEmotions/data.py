@@ -9,6 +9,7 @@ import string
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from TaxiFareModel.params import BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
 
 pd.set_option('display.width', 200)
 
@@ -18,8 +19,8 @@ def retrieve_data(local=True, optimize=False, **kwargs):
     # client = storage.Client()
     if local:
         path = "../raw_data/emotion_data.csv"
-    # else:
-    #     path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
+    else:
+        path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
     df = pd.read_csv(path, nrows=1000)
     return df
 

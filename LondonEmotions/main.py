@@ -3,7 +3,7 @@ from LondonEmotions.trainer import Trainer
 
 default_params = dict(nrows=40000,
                       upload=False,
-                      local=True,  # set to False to get data from GCP (Storage or BigQuery)
+                      local=False,  # set to False to get data from GCP (Storage or BigQuery)
                       gridsearch=False,
                       optimize=True,
                       estimator="NB",
