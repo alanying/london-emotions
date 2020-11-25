@@ -78,7 +78,7 @@ RUNTIME_VERSION=1.15
 
 # package params
 PACKAGE_NAME=LondonEmotions
-FILENAME=trainer
+FILENAME=main
 
 # job
 JOB_NAME=emotion_training_pipeline_$(shell date + '%Y%m%d_%H%M%S')
