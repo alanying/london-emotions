@@ -1,7 +1,6 @@
 pip>=9
 setuptools>=26
 wheel>=0.29
-pandas
 nltk
 pytest
 coverage
@@ -12,3 +11,9 @@ python-gitlab
 twine
 mlflow
 memoized_property
+google-cloud-storage==1.26.0
+pandas==0.24.2
+pandas-profiling==2.9.0
+scikit-image==0.17.2
+scikit-learn==0.20.4
+gcsfs==0.6.0

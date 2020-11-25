@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from LondonEmotions.utils import simple_time_tracker
 
 from memoized_property import memoized_property
@@ -7,7 +9,11 @@ from mlflow.tracking import MlflowClient
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
+
+from google.cloud import storage
+from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
 
 MLFLOW_URI = "https://mlflow.lewagon.co/"
 
@@ -42,8 +48,10 @@ class Trainer():
         pass
 
     def evaluate(self):
+        self.X_val = self.vectorizer.transform(self.X_val)
         f1_train = self.compute_score(self.X_train, self.y_train)
         self.mlflow_log_metric("f1_train", f1_train)
+
         if self.split:
             f1_val = self.compute_score(self.X_val, self.y_val, show=True)
             self.mlflow_log_metric("f1_val", f1_val)
@@ -60,6 +68,16 @@ class Trainer():
         """Save the model into a .joblib """
         joblib.dump(self.pipeline, '../raw_data/model.joblib')
         print("model.joblib saved locally")
+
+        client = storage.Client().bucket(BUCKET_NAME)
+        storage_location = '{}/{}/{}/{}'.format(
+            'models',
+            MODEL_NAME,
+            MODEL_VERSION,
+            'model.joblib')
+        blob = client.blob(storage_location)
+        blob.upload_from_filename(filename='../raw_data/model.joblib')
+        print("model.joblib saved on GCP")
 
     ### MLFlow methods
     @memoized_property
@@ -97,3 +115,4 @@ class Trainer():
         if self.mlflow:
             for k, v in self.kwargs.items():
                 self.mlflow_log_param(k, v)
+
