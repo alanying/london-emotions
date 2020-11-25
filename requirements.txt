@@ -12,3 +12,4 @@ python-gitlab
 twine
 mlflow
 memoized_property
+pydeck
