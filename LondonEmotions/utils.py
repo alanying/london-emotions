@@ -1,4 +1,6 @@
 import time
+from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
+from tensorflow.keras.models import Sequential, Model
 
 def simple_time_tracker(method):
     def timed(*args, **kw):

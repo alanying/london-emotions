@@ -16,6 +16,7 @@ import joblib
 from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from gensim.utils import simple_preprocess
@@ -55,8 +56,6 @@ class Trainer():
 
     @simple_time_tracker
     def train(self):
-
-        print(list(self.X_train.columns))
 
         # Calculate size of train data
         all_training_words = [word for tokens in self.X_train['tokenized_text'] for word in tokens]
