@@ -24,8 +24,8 @@ option = st.sidebar.selectbox(
 #### 3d map
 map_df = pd.read_csv('raw_data/prediction.csv')
 map_df.rename(columns={'lng':'lon'}, inplace=True)
-data = data.T
 data = pd.DataFrame([map_df['lat'], map_df['lon']])
+data = data.T
 
 st.pydeck_chart(pdk.Deck(
     map_style='mapbox://styles/mapbox/light-v9',
@@ -43,7 +43,7 @@ st.pydeck_chart(pdk.Deck(
            radius=200,
            elevation_scale=4,
            elevation_range=[0, 1000],
-           # pickable=True,
+           #pickable=True,
            extruded=True,
         ),
         pdk.Layer(
