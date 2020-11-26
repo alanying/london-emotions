@@ -1,6 +1,7 @@
 import time
 from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
 from tensorflow.keras.models import Sequential, Model
+import numpy as np
 
 def simple_time_tracker(method):
     def timed(*args, **kw):
@@ -16,35 +17,35 @@ def simple_time_tracker(method):
 
     return timed
 
-def instantiate_model(embeddings, max_sequence_length, num_words, embedding_dim, labels_index):
+def create_embedding_matrix(filepath, word_index, embedding_dim):
+    vocab_size = len(word_index) + 1  # Adding again 1 because of reserved 0 index
+    embedding_matrix = np.zeros((vocab_size, embedding_dim))
+    with open(filepath) as f:
+        for line in f:
+            word, *vector = line.split()
+            if word in word_index:
+                idx = word_index[word]
+                embedding_matrix[idx] = np.array(
+                    vector, dtype=np.float32)[:embedding_dim]
+    return embedding_matrix
 
-    embedding_layer = Embedding(num_words,
-                            embedding_dim,
-                            weights=[embeddings],
-                            input_length=max_sequence_length,
-                            trainable=False)
+def instantiate_model(embedd_matrix, max_seq_len, vocab_size, embed_num_dims):
 
-    sequence_input = Input(shape=(max_sequence_length,), dtype='int32')
-    embedded_sequences = embedding_layer(sequence_input)
+    embedd_layer = Embedding(vocab_size,
+                             embed_num_dims,
+                             input_length = max_seq_len,
+                             weights = [embedd_matrix],
+                             trainable=False)
+    # Convolution
+    kernel_size = 2
+    filters = 256
 
-    convs = []
-    filter_sizes = [2,3]
+    model = Sequential()
+    model.add(embedd_layer)
+    model.add(Conv1D(filters, kernel_size, activation='relu'))
+    model.add(GlobalMaxPooling1D())
+    model.add(Dense(256, activation='relu'))
+    model.add(Dense(5, activation='softmax'))
+    model.compile(loss = 'categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
 
-    for filter_size in filter_sizes:
-        l_conv = Conv1D(filters=200, kernel_size=filter_size, activation='relu')(embedded_sequences)
-        l_pool = GlobalMaxPooling1D()(l_conv)
-        convs.append(l_pool)
-
-
-    l_merge = concatenate(convs, axis=1)
-
-    x = Dropout(0.1)(l_merge)
-    x = Dense(128, activation='relu')(x)
-    x = Dropout(0.2)(x)
-    preds = Dense(labels_index, activation='softmax')(x)
-
-    model = Model(sequence_input, preds)
-    model.compile(loss='categorical_crossentropy',
-                  optimizer='adam',
-                  metrics=['accuracy'])
     return model

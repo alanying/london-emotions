@@ -16,8 +16,8 @@ if __name__ == "__main__":
     df = retrieve_data(local=True)
     print("############  Cleaning data   ############")
     df = clean_data(df)
-    X = df[['tokenized_text']]
-    y = df[['Emotion']]
+    X = df['tokenized_text']
+    y = df['Emotion']
     # Train and save model
     t = Trainer(X=X, y=y, **default_params)
     del X, y

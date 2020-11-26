@@ -19,7 +19,7 @@ def retrieve_data(local=True, optimize=False, **kwargs):
     # Add Client() here
     # client = storage.Client()
     if local:
-        path = "../raw_data/emotion_data.csv"
+        path = "raw_data/emotion_data.csv"
     else:
         path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
     df = pd.read_csv(path)

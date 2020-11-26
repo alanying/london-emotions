@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from LondonEmotions.utils import simple_time_tracker, instantiate_model
+from LondonEmotions.utils import simple_time_tracker, instantiate_model, create_embedding_matrix
 
 from memoized_property import memoized_property
 import mlflow
@@ -48,10 +48,10 @@ class Trainer():
         self.y_df = y
         del X, y
         self.split = self.kwargs.get("split", False)  # cf doc above
-        self.x_test_model = None
-        self.y_test_model = None
+        self.X_test_pad = None
+        self.y_test_cat = None
         if self.split:
-            self.X_train, self.X_val, self.y_train, self.y_val = \
+            self.X_train, self.X_test, self.y_train, self.y_test = \
             train_test_split(self.X_df, self.y_df, test_size=0.15)
 
         self.log_kwargs_params()
@@ -59,94 +59,80 @@ class Trainer():
     @simple_time_tracker
     def train(self):
 
-        # Calculate size of train data
-        all_training_words = [word for tokens in self.X_train['tokenized_text'] for word in tokens]
-        training_sentence_lengths = [len(tokens) for tokens in self.X_train['tokenized_text']]
-        training_vocab = sorted(list(set(all_training_words)))
-        # Calculate size of test data
-        all_test_words = [word for tokens in self.X_val['tokenized_text'] for word in tokens]
-        test_sentence_lengths = [len(tokens) for tokens in self.X_val['tokenized_text']]
-        test_vocab = sorted(list(set(all_test_words)))
-        # Load pretrained word2vec
-        if self.local:
-            word2vec_path = '../raw_data/google-vectors.bin.gz'
-        else:
-            word2vec_path = "gs://{}/{}".format(BUCKET_NAME, WORD2VEC_PATH)
-        word2vec = models.KeyedVectors.load_word2vec_format(word2vec_path, binary=True)
+        num_classes = 5
+        embed_num_dims = 300
+        max_seq_len = 300
+        class_names = ['joy', 'worry', 'anger', 'sad', 'neutral']
 
-        MAX_SEQUENCE_LENGTH = 201
-        EMBEDDING_DIM = 300
+        sentences_train = [[_ for _ in sentence] for sentence in self.X_train]
+        sentences_test = [[_ for _ in sentence] for sentence in self.X_test]
 
-        # Train Tokenization
-        tokenizer = Tokenizer(num_words=len(training_vocab), lower=True, char_level=False)
-        tokenizer.fit_on_texts(self.X_train['tokenized_text'].tolist())
-        training_sequences = tokenizer.texts_to_sequences(self.X_train['tokenized_text'].tolist())
-        train_word_index = tokenizer.word_index
-        train_cnn_data = pad_sequences(training_sequences, maxlen=MAX_SEQUENCE_LENGTH)
-        # Train Embedding weights
-        train_embedding_weights = np.zeros((len(train_word_index)+1, EMBEDDING_DIM))
-        for word,index in train_word_index.items():
-            train_embedding_weights[index,:] = word2vec[word] if word in word2vec else np.random.rand(EMBEDDING_DIM)
+        texts_train = [' '.join([x for x in sentence]) for sentence in sentences_train]
+        texts_test = [' '.join([x for x in sentence]) for sentence in sentences_test]
 
-        # Test Tokenization
-        test_sequences = tokenizer.texts_to_sequences(self.X_val['tokenized_text'].tolist())
-        test_cnn_data = pad_sequences(test_sequences, maxlen=MAX_SEQUENCE_LENGTH)
+        # Tokenize text
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(texts_train)
 
-        # instantiate model
-        model = instantiate_model(train_embedding_weights,
-                                MAX_SEQUENCE_LENGTH,
-                                len(train_word_index)+1,
-                                EMBEDDING_DIM,
-                                5)
+        sequence_train = tokenizer.texts_to_sequences(texts_train)
+        sequence_test = tokenizer.texts_to_sequences(texts_test)
 
-        # Prepare mapping for the sentiment
-        sentiment_coding = {'anger': 0 , 'joy': 4, 'worry': 2, 'sad': 1 , 'neutral': 3}
+        index_of_words = tokenizer.word_index
 
-        # apply mapping
-        y_train_coded = self.y_train['Emotion'].map(sentiment_coding)
-        y_test_coded = self.y_val['Emotion'].map(sentiment_coding)
+        # vacab size is number of unique words + reserved 0 index for padding
+        vocab_size = len(index_of_words) + 1
 
-        # Transform the numbers to categories
-        y_train_cat = to_categorical(y_train_coded)
-        y_test_cat = to_categorical(y_test_coded)
+        # Padding text sentences
+        X_train_pad = pad_sequences(sequence_train, maxlen = max_seq_len )
+        self.X_test_pad = pad_sequences(sequence_test, maxlen = max_seq_len )
 
-        num_epochs = 10
-        batch_size = 32
-        X_train_model = train_cnn_data
-        y_train_model = y_train_cat
+        # Encode target
+        encoding = {
+            'anger': 0,
+            'joy': 1,
+            'worry': 2,
+            'neutral': 3,
+            'sad': 4
+        }
 
-        self.X_test_model = test_cnn_data
-        self.y_test_model = y_test_cat
+        y_train_enc = [encoding[x] for x in self.y_train]
+        y_test_enc = [encoding[x] for x in self.y_test]
 
-        print('####### Training model NOW #######')
+        y_train_cat = to_categorical(y_train_enc)
+        self.y_test_cat = to_categorical(y_test_enc)
 
+        # Create embedding matrix
+        file_path = 'embeddings/wiki-news-300d-1M.vec'
+        embedd_matrix = create_embedding_matrix(file_path, index_of_words, embed_num_dims)
+        embedd_matrix.shape
+
+        # Train model
+        batch_size = 256
+        epochs = 4
         es = EarlyStopping(patience=1, restore_best_weights=True)
-        history = model.fit(X_train_model, y_train_model,
-                    validation_split=0.3,
-                    batch_size=batch_size,
-                    epochs=num_epochs,
-                    callbacks=[es],
-                    verbose=1
-                   )
+
+        model = instantiate_model(embedd_matrix, max_seq_len, vocab_size, embed_num_dims)
+
+        hist = model.fit(X_train_pad, y_train_cat,
+                         batch_size=batch_size,
+                         epochs=epochs,
+                         validation_split=0.3,
+                         callbacks=[es])
+
         self.pipeline = model
 
-        f1_train = self.compute_score(X_train_model, y_train_model)
-        self.mlflow_log_metric("f1_train", f1_train)
-        print("f1 train: {}".format(f1_train))
 
     def evaluate(self):
         if self.split:
-            f1_val = self.compute_score(self.X_test_model, self.y_test_model)
+            f1_val = self.compute_score(self.X_test_pad, self.y_test_cat)
             self.mlflow_log_metric("f1_val", f1_val)
             print("f1 val: {}".format(f1_val))
 
     def compute_score(self, X_test, y_test):
-        predictions = self.pipeline.predict(y_test, batch_size=32, verbose=1)
+        predictions = self.pipeline.predict(X_test, batch_size=32, verbose=1)
         preds_categorical = []
-        import ipdb; ipdb.set_trace()
         for prediction in predictions:
             preds_categorical.append(np.argmax(prediction))
-        print(preds_categorical)
         preds_categorical = to_categorical(preds_categorical)
 
         test_score = f1_score(y_test, preds_categorical, average='weighted')
@@ -154,7 +140,7 @@ class Trainer():
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
-        joblib.dump(self.pipeline, '../raw_data/model.joblib')
+        joblib.dump(self.pipeline, 'raw_data/model.joblib')
         print("model.joblib saved locally")
 
         client = storage.Client().bucket(BUCKET_NAME)
@@ -164,7 +150,7 @@ class Trainer():
             MODEL_VERSION,
             'model.joblib')
         blob = client.blob(storage_location)
-        blob.upload_from_filename(filename='../raw_data/model.joblib')
+        blob.upload_from_filename(filename='raw_data/model.joblib')
         print("model.joblib saved on GCP")
 
     ### MLFlow methods
