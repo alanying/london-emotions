@@ -13,3 +13,4 @@ twine
 mlflow
 memoized_property
 pydeck
+python-dotenv
