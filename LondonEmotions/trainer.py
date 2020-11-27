@@ -21,6 +21,9 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from gensim.utils import simple_preprocess
 import string
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -102,7 +105,7 @@ class Trainer():
         self.y_test_cat = to_categorical(y_test_enc)
 
         # Create embedding matrix
-        if local:
+        if self.local:
             file_path = 'embeddings/wiki-news-300d-1M.vec'
         else:
             file_path = "gs://{}/{}".format(BUCKET_NAME, WORD2VEC_PATH)
@@ -144,7 +147,7 @@ class Trainer():
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
-        if local:
+        if self.local:
             self.pipeline.save('raw_data/')
             print("model saved locally")
 

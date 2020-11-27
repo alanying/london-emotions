@@ -6,6 +6,9 @@ from os.path import split
 import pandas as pd
 import datetime
 import string
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
