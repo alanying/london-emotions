@@ -1,13 +1,13 @@
 from LondonEmotions.data import clean_data, retrieve_data
 from LondonEmotions.trainer import Trainer
 
-local = True
+local = False
 
-default_params = dict(nrows=40000,
+default_params = dict(nrows='all',
                       upload=False,
                       local=local,  # set to False to get data from GCP (Storage or BigQuery)
                       gridsearch=False,
-                      optimize=True,
+                      optimize=False,
                       estimator="CNN",
                       mlflow=True,  # set to True to log params to mlflow
                       experiment_name="LondonEmotions",
