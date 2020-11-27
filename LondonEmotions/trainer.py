@@ -147,19 +147,20 @@ class Trainer():
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
-        if self.local:
-            self.pipeline.save('raw_data/')
-            print("model saved locally")
+        # Save to folder nlp_model on cloud machine
+        self.pipeline.save('nlp_model')
+        print("model saved locally")
 
         if upload:
-            client = storage.Client().bucket(BUCKET_NAME)
+            client = storage.Client()
+            bucket = client.get_bucket(BUCKET_NAME)
             storage_location = '{}/{}/{}/{}'.format(
                 'models',
                 MODEL_NAME,
                 MODEL_VERSION,
                 'saved_model.pb')
-            blob = client.blob(storage_location)
-            blob.upload_from_filename(filename='raw_data/saved_model.pb')
+            blob = bucket.blob(storage_location)
+            blob.upload_from_filename(filename='nlp_model/saved_model.pb')
             print("model saved on GCP")
 
     ### MLFlow methods
