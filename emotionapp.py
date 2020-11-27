@@ -49,27 +49,27 @@ def main():
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
     # split dataframe to emotions
-    joy_df = data[:10] #data['Emotion'] == 'joy' #updatekey
+    joy_df = data[:30] #data['Emotion'] == 'joy' #updatekey
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
 
-    sad_df = data[100:110] #data['Emotion'] == 'sad' #updatekey
+    sad_df = data[400:430] #data['Emotion'] == 'sad' #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
 
-    worry_df = data[500:510] #data['Emotion'] == 'worry' #updatekey
+    worry_df = data[800:830] #data['Emotion'] == 'worry' #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
 
-    angry_df = data[100:1010] #data['Emotion'] == 'angry' #updatekey
+    angry_df = data[1200:1230] #data['Emotion'] == 'angry' #updatekey
     angry_df["emoji"] = None
     for i in angry_df.index:
         angry_df["emoji"][i] = angry_icon
 
-    neutral_df = data[2000:2010] #data['Emotion'] == 'neutral' #updatekey
+    neutral_df = data[1600:1630] #data['Emotion'] == 'neutral' #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
         neutral_df["emoji"][i] = neutral_icon
@@ -81,10 +81,63 @@ def main():
         st.markdown("this is a placeholder text")
         st.map(data=data_for_static)
 
+    if st.checkbox('All-in-one'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/streets-v11',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                    type="IconLayer",
+                    data=joy_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=sad_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=worry_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=angry_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=neutral_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+            ],
+        ))
+
     # if analysis == "joy":
     if st.checkbox('joy'):
         st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/streets-v11',
+            map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
                 latitude=51.50722,
                 longitude=-0.1275,
@@ -97,8 +150,8 @@ def main():
                    data=data,     #updatekey
                    get_position='[lon, lat]',
                    radius=200,
-                   elevation_scale=4,
-                   elevation_range=[0, 1000],
+                   elevation_scale=8,
+                   elevation_range=[0, 2000],
                    get_fill_color='[0, 128, 255, 160]',
                    #pickable=True,
                    extruded=True,
@@ -130,7 +183,7 @@ def main():
                     data=data,     #updatekey
                     get_position='[lon, lat]',
                     get_color='[0, 128, 255, 160]',
-                    get_radius=200,
+                    get_radius=100,
                 ),
             ],
         ))
@@ -148,79 +201,22 @@ def main():
             layers=[
                 pdk.Layer(
                     type="IconLayer",
-                    data=joy_df,
-                    get_icon="emoji",
-                    get_size=4,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-            ],
-        ))
-
-    if st.checkbox('All-in-one'):
-
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/dark-v10',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                    type="IconLayer",
-                    data=joy_df,
-                    get_icon="emoji",
-                    get_size=4,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=sad_df,
-                    get_icon="emoji",
-                    get_size=4,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=worry_df,
-                    get_icon="emoji",
-                    get_size=4,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=angry_df,
-                    get_icon="emoji",
-                    get_size=4,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
                     data=neutral_df,
                     get_icon="emoji",
-                    get_size=4,
+                    get_size=3,
                     size_scale=15,
                     get_position=["lon", "lat"],
                  ),
             ],
         ))
-
 
     if st.checkbox('Try it yourself!'):
         ### input text
         default = "Type something"
         user_input = st.text_area("Try it yourself", default)
-        to_predict = pd.DataFrame(user_input)
-        response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
-        st.write("I see you are feeling ", response[0])
-
-
+        to_predict = pd.DataFrame([user_input])
+        #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
+        #st.write("I see you are feeling ", response[0])
 
 
 if __name__ == "__main__":
