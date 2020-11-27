@@ -81,7 +81,7 @@ PACKAGE_NAME=LondonEmotions
 FILENAME=main
 
 # job
-JOB_NAME=emotion_training_pipeline_$(shell date + '%Y%m%d_%H%M%S')
+JOB_NAME=emotion_training_pipeline_$(shell date  "+%Y%m%d_%h%m%s")
 
 
 run_locally:
