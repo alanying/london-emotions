@@ -70,7 +70,7 @@ class Trainer():
         texts_train = [' '.join([x for x in sentence]) for sentence in sentences_train]
         texts_test = [' '.join([x for x in sentence]) for sentence in sentences_test]
 
-        # Tokenize text
+        # Tokenize text (convert to integers)
         tokenizer = Tokenizer()
         tokenizer.fit_on_texts(texts_train)
 
@@ -140,18 +140,19 @@ class Trainer():
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
-        joblib.dump(self.pipeline, 'raw_data/model.joblib')
-        print("model.joblib saved locally")
+        self.pipeline.save('raw_data/')
+        print("model saved locally")
 
-        client = storage.Client().bucket(BUCKET_NAME)
-        storage_location = '{}/{}/{}/{}'.format(
-            'models',
-            MODEL_NAME,
-            MODEL_VERSION,
-            'model.joblib')
-        blob = client.blob(storage_location)
-        blob.upload_from_filename(filename='raw_data/model.joblib')
-        print("model.joblib saved on GCP")
+        if upload:
+            client = storage.Client().bucket(BUCKET_NAME)
+            storage_location = '{}/{}/{}/{}'.format(
+                'models',
+                MODEL_NAME,
+                MODEL_VERSION,
+                'saved_model.pb')
+            blob = client.blob(storage_location)
+            blob.upload_from_filename(filename='raw_data/saved_model.pb')
+            print("model saved on GCP")
 
     ### MLFlow methods
     @memoized_property
