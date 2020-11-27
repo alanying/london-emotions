@@ -23,7 +23,7 @@ def retrieve_data(local=True, optimize=False, **kwargs):
     else:
         path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
     df = pd.read_csv(path)
-    return df.sample(10000)
+    return df
 
 def clean_data(data):
     """

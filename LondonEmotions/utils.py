@@ -37,7 +37,7 @@ def instantiate_model(embedd_matrix, max_seq_len, vocab_size, embed_num_dims):
                              weights = [embedd_matrix],
                              trainable=False)
     # Convolution
-    kernel_size = 2
+    kernel_size = 3
     filters = 256
 
     model = Sequential()
