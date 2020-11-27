@@ -12,6 +12,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
+import pickle
 
 from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
 from tensorflow.keras.models import Sequential, Model
@@ -28,6 +29,7 @@ from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from gensim import models
+from tensorflow.python.lib.io import file_io
 
 from google.cloud import storage
 from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, \
@@ -73,16 +75,37 @@ class Trainer():
         texts_train = [' '.join([x for x in sentence]) for sentence in sentences_train]
         texts_test = [' '.join([x for x in sentence]) for sentence in sentences_test]
 
-        # Tokenize text (convert to integers)
+        # Train tokenizer on training data (convert to integers)
         tokenizer = Tokenizer()
         tokenizer.fit_on_texts(texts_train)
 
+        # Save tokenizer
+        if self.local:
+            filepath = 'raw_data/tokenizer.pickle'
+        else:
+            filepath = 'tokenizer/tokenizer.pickle'
+        with file_io.FileIO(filepath, 'wb') as handle:
+            pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with file_io.FileIO(filepath, mode='r') as f:
+            client = storage.Client()
+            bucket = client.get_bucket(BUCKET_NAME)
+            storage_location = '{}/{}/{}'.format(
+                'models',
+                'tokenizer',
+                'model_tokenizer'
+                )
+            blob = bucket.blob(storage_location)
+            blob.upload_from_filename(filename=filepath)
+            print("tokenizer saved on GCP")
+
+        # Convert texts to itegers
         sequence_train = tokenizer.texts_to_sequences(texts_train)
         sequence_test = tokenizer.texts_to_sequences(texts_test)
 
         index_of_words = tokenizer.word_index
 
-        # vacab size is number of unique words + reserved 0 index for padding
+        # vocab size is number of unique words + reserved 0 index for padding
         vocab_size = len(index_of_words) + 1
 
         # Padding text sentences

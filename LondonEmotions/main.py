@@ -1,7 +1,7 @@
 from LondonEmotions.data import clean_data, retrieve_data
 from LondonEmotions.trainer import Trainer
 
-local = False
+local = True
 
 default_params = dict(nrows='all',
                       upload=False,
