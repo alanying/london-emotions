@@ -2,7 +2,7 @@
 
 # model folder name (will contain the folders for all trained model versions)
 MODEL_NAME = "emotions"
-MODEL_VERSION = "v1"
+MODEL_VERSION = "v2"
 
 # gcp project
 PROJECT_ID = "london-emotions"

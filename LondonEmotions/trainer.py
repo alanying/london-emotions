@@ -144,8 +144,9 @@ class Trainer():
 
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
-        self.pipeline.save('raw_data/')
-        print("model saved locally")
+        if local:
+            self.pipeline.save('raw_data/')
+            print("model saved locally")
 
         if upload:
             client = storage.Client().bucket(BUCKET_NAME)
