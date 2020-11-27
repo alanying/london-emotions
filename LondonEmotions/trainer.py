@@ -102,7 +102,11 @@ class Trainer():
         self.y_test_cat = to_categorical(y_test_enc)
 
         # Create embedding matrix
-        file_path = 'embeddings/wiki-news-300d-1M.vec'
+        if local:
+            file_path = 'embeddings/wiki-news-300d-1M.vec'
+        else:
+            file_path = "gs://{}/{}".format(BUCKET_NAME, WORD2VEC_PATH)
+
         embedd_matrix = create_embedding_matrix(file_path, index_of_words, embed_num_dims)
         embedd_matrix.shape
 
