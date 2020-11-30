@@ -59,7 +59,7 @@ def main():
     joy_df = joy_df.T
 
     #sad_df = data[400:430]
-    sad_df = data[data['emotion']=='sad']  == 'sad' #updatekey
+    sad_df = data[data['emotion']=='sad']  #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
