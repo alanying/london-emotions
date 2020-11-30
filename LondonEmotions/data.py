@@ -9,6 +9,7 @@ import string
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -32,17 +33,20 @@ def clean_data(data):
     """
     clean and preprocess data
     """
-    # Lowercase text
+    # Process number reviews as strings
+    data['Text'] = data['Text'].astype(str)
+
+    # Remove numbers
     data['clean_text'] = data['Text'].apply(
+        lambda x: ''.join(let for let in x if not let.isdigit())
+        )
+    # Lowercase text
+    data['clean_text'] = data['clean_text'].apply(
         lambda x: x.lower()
         )
     # Strip whitespace
     data['clean_text'] = data['clean_text'].apply(
         lambda x: x.strip()
-        )
-    # Remove numbers
-    data['clean_text'] = data['clean_text'].apply(
-        lambda x: ''.join(let for let in x if not let.isdigit())
         )
     # Remove punctuation
     data['clean_text'] = data['clean_text'].apply(
@@ -53,10 +57,10 @@ def clean_data(data):
         lambda x: word_tokenize(x)
     )
     # Remove stopwords
-    # stop_words = set(stopwords.words('english'))
-    # data['clean_text'] = data['clean_text'].apply(
-    #     lambda x: [word for word in x if word not in stop_words]
-    #     )
+    stop_words = set(stopwords.words('english'))
+    data['clean_text'] = data['clean_text'].apply(
+        lambda x: [word for word in x if word not in stop_words]
+        )
     # Lemmatizing with nltk
     lemmatizer = WordNetLemmatizer()
     data['clean_text'] = data['clean_text'].apply(
@@ -67,6 +71,8 @@ def clean_data(data):
     data['tokenized_text'] = [utils.simple_preprocess(line, deacc=True) for line in data['clean_text']]
     # Return data
     return data
+
+
 if __name__ == '__main__':
     # For introspections purpose to quickly get this functions on ipython
     # import london-emotions
