@@ -28,7 +28,8 @@ REQUIRED_PACKAGES = [
       'six==1.13.0',
       'joblib==0.14.1',
       'numpy==1.18.4',
-      'gensim'
+      'gensim',
+      'python-dotenv'
 ]
 
 setup(name='london-emotions',
