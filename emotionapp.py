@@ -37,17 +37,18 @@ def main():
     # data = data.T
     data = pd.read_csv('raw_data/pred_testset.csv') #updatekey
     data.rename(columns={'lng':'lon'}, inplace=True)
+    data.fillna('nan', inplace=True)
 
     # define emoji
     JOY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/joy_gabpby.png"
     SAD_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/sad_icpf1w.png"
     WORRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/worry_rwobfs.png"
-    ANGRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/angry_shqypp.png"
+    ANGER_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/angry_shqypp.png"
     NEUTRAL_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/neutral_evi6qa.png"
     joy_icon = {"url": JOY_URL, "width": 242, "height": 242, "anchorY": 242,}
     sad_icon = {"url": SAD_URL, "width": 242, "height": 242, "anchorY": 242,}
     worry_icon = {"url": WORRY_URL, "width": 242, "height": 242, "anchorY": 242,}
-    angry_icon = {"url": ANGRY_URL, "width": 242, "height": 242, "anchorY": 242,}
+    anger_icon = {"url": ANGER_URL, "width": 242, "height": 242, "anchorY": 242,}
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
     # split dataframe to emotions
@@ -56,35 +57,30 @@ def main():
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
-    joy_df = joy_df.T
 
     #sad_df = data[400:430]
     sad_df = data[data['emotion']=='sad']  #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
-    sad_df = sad_df.T
 
     #worry_df = data[800:830]
     worry_df = data[data['emotion']=='worry']  #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
-    worry_df = worry_df.T
 
-    #angry_df = data[1200:1230] #
-    angry_df = data[data['emotion']=='angry']  #updatekey
-    angry_df["emoji"] = None
-    for i in angry_df.index:
-        angry_df["emoji"][i] = angry_icon
-    angry_df = angry_df.T
+    #anger_df = data[1200:1230] #
+    anger_df = data[data['emotion']=='anger']  #updatekey
+    anger_df["emoji"] = None
+    for i in anger_df.index:
+        anger_df["emoji"][i] = anger_icon
 
     #neutral_df = data[1600:1630]
     neutral_df = data[data['emotion']=='neutral']  #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
         neutral_df["emoji"][i] = neutral_icon
-    neutral_df = neutral_df.T
 
     # analysis = st.sidebar.selectbox("Choose your map", ["Data spread", "All-in-one", "Joy", "Sad", "Worry", "Neutral" "Unknown?!"])
     # if analysis == "Data spread":
@@ -129,7 +125,7 @@ def main():
                  ),
                 pdk.Layer(
                     type="IconLayer",
-                    data=angry_df,
+                    data=anger_df,
                     get_icon="emoji",
                     get_size=3,
                     size_scale=15,
