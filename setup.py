@@ -9,7 +9,7 @@ REQUIRED_PACKAGES = [
       'pip>=9',
       'setuptools>=26',
       'wheel>=0.29',
-      'nltk',
+      'nltk==3.5',
       'pytest',
       'coverage',
       'flake8',
