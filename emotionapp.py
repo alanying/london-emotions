@@ -25,7 +25,6 @@ import streamlit as st
 import pydeck as pdk
 import numpy as np
 import pandas as pd
-from bokeh.models.widgets import Div
 
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
@@ -180,9 +179,6 @@ def main():
         joyest = joy_df['place_id'].value_counts().index.tolist()[0]
         address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
         link = f'[Let\'s find out the most joyful place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
-
-        link = f'[GitHub]({address})'
         st.markdown(link, unsafe_allow_html=True)
 
     # if analysis == "Sad":
