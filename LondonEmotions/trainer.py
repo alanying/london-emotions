@@ -30,7 +30,6 @@ from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from gensim import models
 from tensorflow.python.lib.io import file_io
-
 from google.cloud import storage
 from LondonEmotions.params import MODEL_NAME, MODEL_VERSION, BUCKET_NAME, \
     BUCKET_TRAIN_DATA_PATH, WORD2VEC_PATH
