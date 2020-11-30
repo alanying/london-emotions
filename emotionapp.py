@@ -25,6 +25,7 @@ import streamlit as st
 import pydeck as pdk
 import numpy as np
 import pandas as pd
+from LondonEmotions.params import BUCKET_NAME, PRETEST_PATH
 
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
@@ -35,7 +36,8 @@ def main():
     # data_for_static.rename(columns={'lng':'lon'}, inplace=True)
     # data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
     # data = data.T
-    data = pd.read_csv('raw_data/pred_testset.csv') #updatekey
+    file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
+    data = pd.read_csv(file_path) #updatekey
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
