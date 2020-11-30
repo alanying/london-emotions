@@ -11,3 +11,5 @@ groupama/data/base_pno.*
 .idea/
 /raw_data/
 .env
+/embeddings/
+

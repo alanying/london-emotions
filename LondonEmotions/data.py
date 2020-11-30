@@ -6,9 +6,14 @@ from os.path import split
 import pandas as pd
 import datetime
 import string
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from gensim import utils
+from LondonEmotions.params import BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
 
 pd.set_option('display.width', 200)
 
@@ -17,10 +22,10 @@ def retrieve_data(local=True, optimize=False, **kwargs):
     # Add Client() here
     # client = storage.Client()
     if local:
-        path = "../raw_data/emotion_data.csv"
-    # else:
-    #     path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
-    df = pd.read_csv(path, nrows=1000)
+        path = "raw_data/emotion_data.csv"
+    else:
+        path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
+    df = pd.read_csv(path)
     return df
 
 def clean_data(data):
@@ -58,6 +63,8 @@ def clean_data(data):
         lambda x: ' '.join(lemmatizer.lemmatize(word) for word in x)
         )
 
+    # Tokenizing text
+    data['tokenized_text'] = [utils.simple_preprocess(line, deacc=True) for line in data['clean_text']]
     # Return data
     return data
 if __name__ == '__main__':
