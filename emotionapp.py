@@ -20,7 +20,7 @@
 # can try to improve performance by process df per map?
 ##########################################################
 
-#import LondonEmotions ???  #updatekey
+import LondonEmotions  #updatekey
 import streamlit as st
 import pydeck as pdk
 import numpy as np
@@ -31,10 +31,12 @@ mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
 def main():
     ### Dataframe must be loaded before any maps
-    data_for_static = pd.read_csv('raw_data/prediction.csv') #updatekey
-    data_for_static.rename(columns={'lng':'lon'}, inplace=True)
-    data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
-    data = data.T
+    # data_for_static = pd.read_csv('raw_data/pred_testset.csv') #updatekey
+    # data_for_static.rename(columns={'lng':'lon'}, inplace=True)
+    # data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
+    # data = data.T
+    data = pd.read_csv('raw_data/pred_testset.csv') #updatekey
+    data.rename(columns={'lng':'lon'}, inplace=True)
 
     # define emoji
     JOY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/joy_gabpby.png"
@@ -49,30 +51,40 @@ def main():
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
     # split dataframe to emotions
-    joy_df = data[:30] #data['Emotion'] == 'joy' #updatekey
+    #joy_df = data[:30]
+    joy_df = data[data['emotion']=='joy'] #updatekey
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
+    joy_df = joy_df.T
 
-    sad_df = data[400:430] #data['Emotion'] == 'sad' #updatekey
+    #sad_df = data[400:430]
+    sad_df = data[data['emotion']=='sad']  == 'sad' #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
+    sad_df = sad_df.T
 
-    worry_df = data[800:830] #data['Emotion'] == 'worry' #updatekey
+    #worry_df = data[800:830]
+    worry_df = data[data['emotion']=='worry']  #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
+    worry_df = worry_df.T
 
-    angry_df = data[1200:1230] #data['Emotion'] == 'angry' #updatekey
+    #angry_df = data[1200:1230] #
+    angry_df = data[data['emotion']=='angry']  #updatekey
     angry_df["emoji"] = None
     for i in angry_df.index:
         angry_df["emoji"][i] = angry_icon
+    angry_df = angry_df.T
 
-    neutral_df = data[1600:1630] #data['Emotion'] == 'neutral' #updatekey
+    #neutral_df = data[1600:1630]
+    neutral_df = data[data['emotion']=='neutral']  #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
         neutral_df["emoji"][i] = neutral_icon
+    neutral_df = neutral_df.T
 
     # analysis = st.sidebar.selectbox("Choose your map", ["Data spread", "All-in-one", "Joy", "Sad", "Worry", "Neutral" "Unknown?!"])
     # if analysis == "Data spread":
