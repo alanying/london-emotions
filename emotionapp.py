@@ -8,6 +8,19 @@
 # mapbox://styles/mapbox/satellite-v9
 # mapbox://styles/mapbox/satellite-streets-v11
 
+##########################################################
+#          Reminder for integration
+##########################################################
+# change key: #updatekey
+# -import the packge
+# -update csv, dataframe output from the model
+# -update all dataframes
+# -update how we trigger the model prediction
+#
+# can try to improve performance by process df per map?
+##########################################################
+
+#import LondonEmotions ???  #updatekey
 import streamlit as st
 import pydeck as pdk
 import numpy as np
@@ -16,141 +29,195 @@ import pandas as pd
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
-st.title('Emotions on the map')
-st.write('How are you feeling today?')
+def main():
+    ### Dataframe must be loaded before any maps
+    data_for_static = pd.read_csv('raw_data/prediction.csv') #updatekey
+    data_for_static.rename(columns={'lng':'lon'}, inplace=True)
+    data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
+    data = data.T
 
-map_df = pd.read_csv('raw_data/prediction.csv')
-map_df.rename(columns={'lng':'lon'}, inplace=True)
-data = pd.DataFrame([map_df['lat'], map_df['lon']])
-st.map(data=map_df)
+    # define emoji
+    JOY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/joy_gabpby.png"
+    SAD_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/sad_icpf1w.png"
+    WORRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/worry_rwobfs.png"
+    ANGRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/angry_shqypp.png"
+    NEUTRAL_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/neutral_evi6qa.png"
+    joy_icon = {"url": JOY_URL, "width": 242, "height": 242, "anchorY": 242,}
+    sad_icon = {"url": SAD_URL, "width": 242, "height": 242, "anchorY": 242,}
+    worry_icon = {"url": WORRY_URL, "width": 242, "height": 242, "anchorY": 242,}
+    angry_icon = {"url": ANGRY_URL, "width": 242, "height": 242, "anchorY": 242,}
+    neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
-option = st.sidebar.selectbox(
-    'Which emotion would you search for?',
-     ['Choose an emotion', 'Happy', 'Sad']) # replace iwth df['Emotion']
-'You selected:', option
+    # split dataframe to emotions
+    joy_df = data[:30] #data['Emotion'] == 'joy' #updatekey
+    joy_df["emoji"] = None
+    for i in joy_df.index:
+        joy_df["emoji"][i] = joy_icon
 
-#### 3d map dataframe
-map_df = pd.read_csv('raw_data/prediction.csv')
-map_df.rename(columns={'lng':'lon'}, inplace=True)
-data = pd.DataFrame([map_df['lat'], map_df['lon']])
-data = data.T
+    sad_df = data[400:430] #data['Emotion'] == 'sad' #updatekey
+    sad_df["emoji"] = None
+    for i in sad_df.index:
+        sad_df["emoji"][i] = sad_icon
 
-### ScatterplotLayer
-st.pydeck_chart(pdk.Deck(
-    map_style='mapbox://styles/mapbox/streets-v11',
-    initial_view_state=pdk.ViewState(
-        latitude=51.50722,
-        longitude=-0.1275,
-        zoom=9,
-        pitch=50,
-    ),
-    layers=[
-        pdk.Layer(
-           'HexagonLayer',
-           data=data,
-           get_position='[lon, lat]',
-           radius=200,
-           elevation_scale=4,
-           elevation_range=[0, 1000],
-           get_fill_color='[0, 128, 255, 160]',
-           #pickable=True,
-           extruded=True,
-        ),
-        pdk.Layer(
-            'ScatterplotLayer',
-            data=data,
-            get_position='[lon, lat]',
-            get_color='[200, 30, 0, 160]',
-            # get_color='[0, 128, 255, 160]',
-            get_radius=200,
-        ),
-    ],
-))
+    worry_df = data[800:830] #data['Emotion'] == 'worry' #updatekey
+    worry_df["emoji"] = None
+    for i in worry_df.index:
+        worry_df["emoji"][i] = worry_icon
 
-### ColumnLayer
-st.pydeck_chart(pdk.Deck(
-    map_style='mapbox://styles/mapbox/dark-v10',
-    initial_view_state=pdk.ViewState(
-        latitude=51.50722,
-        longitude=-0.1275,
-        zoom=9,
-        pitch=50,
-    ),
-    layers=[
-        pdk.Layer(
-            'HeatmapLayer',
-            data=data,
-            get_position='[lon, lat]',
-            get_color='[0, 128, 255, 160]',
-            get_radius=200,
-        ),
-    ],
-))
+    angry_df = data[1200:1230] #data['Emotion'] == 'angry' #updatekey
+    angry_df["emoji"] = None
+    for i in angry_df.index:
+        angry_df["emoji"][i] = angry_icon
 
-### IconLayer
-DATA_URL = "" # GCP file path?
-HAPPY_URL="https://image.emojipng.com/807/12075807.jpg"
-SAD_URL="https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
+    neutral_df = data[1600:1630] #data['Emotion'] == 'neutral' #updatekey
+    neutral_df["emoji"] = None
+    for i in neutral_df.index:
+        neutral_df["emoji"][i] = neutral_icon
 
-happy_icon = {
-    "url": HAPPY_URL,
-    "width": 242,
-    "height": 242,
-    "anchorY": 242,
-}
+    # analysis = st.sidebar.selectbox("Choose your map", ["Data spread", "All-in-one", "Joy", "Sad", "Worry", "Neutral" "Unknown?!"])
+    # if analysis == "Data spread":
+    if st.checkbox('Data spread'):
+        st.header("Dots on the map")
+        st.markdown("this is a placeholder text")
+        st.map(data=data_for_static)
 
-sad_icon = {
-    "url": SAD_URL,
-    "width": 242,
-    "height": 242,
-    "anchorY": 242,
-}
+    if st.checkbox('All-in-one'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/streets-v11',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                    type="IconLayer",
+                    data=joy_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=sad_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=worry_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=angry_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+                pdk.Layer(
+                    type="IconLayer",
+                    data=neutral_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+            ],
+        ))
 
-# data = pd.read_json(DATA_URL)
-happy_df = data[:1500] #data['Emotion'] == 'happy'
-sad_df = data[1500:] #data['Emotion'] == 'sad'
+    # if analysis == "joy":
+    if st.checkbox('joy'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/dark-v10',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                   'HexagonLayer',
+                   data=data,     #updatekey
+                   get_position='[lon, lat]',
+                   radius=200,
+                   elevation_scale=8,
+                   elevation_range=[0, 2000],
+                   get_fill_color='[0, 128, 255, 160]',
+                   #pickable=True,
+                   extruded=True,
+                ),
+                pdk.Layer(
+                    'ScatterplotLayer',
+                    data=data,     #updatekey
+                    get_position='[lon, lat]',
+                    get_color='[200, 30, 0, 160]',
+                    # get_color='[0, 128, 255, 160]',
+                    get_radius=200,
+                ),
+            ],
+        ))
 
-happy_df["hemoji"] = None
-for i in happy_df.index:
-    happy_df["hemoji"][i] = happy_icon
+    # if analysis == "Sad":
+    if st.checkbox('Sad'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/dark-v10',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                    'HeatmapLayer',
+                    data=data,     #updatekey
+                    get_position='[lon, lat]',
+                    get_color='[0, 128, 255, 160]',
+                    get_radius=100,
+                ),
+            ],
+        ))
 
-sad_df["semoji"] = None
-for i in sad_df.index:
-    sad_df["semoji"][i] = sad_icon
+    if st.checkbox('Neutral'):
+        # JOY_URL="https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/satellite-streets-v11',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                    type="IconLayer",
+                    data=neutral_df,
+                    get_icon="emoji",
+                    get_size=3,
+                    size_scale=15,
+                    get_position=["lon", "lat"],
+                 ),
+            ],
+        ))
 
-st.pydeck_chart(pdk.Deck(
-    map_style='mapbox://styles/mapbox/streets-v11',
-    initial_view_state=pdk.ViewState(
-        latitude=51.50722,
-        longitude=-0.1275,
-        zoom=9,
-        pitch=50,
-    ),
-    layers=[
-        pdk.Layer(
-            type="IconLayer",
-            data=happy_df,
-            get_icon="hemoji",
-            get_size=4,
-            size_scale=15,
-            get_position=["lon", "lat"],
-        ),
-        pdk.Layer(
-            type="IconLayer",
-            data=sad_df,
-            get_icon="semoji",
-            get_size=4,
-            size_scale=15,
-            get_position=["lon", "lat"],
-        ),
-
-    ],
-))
+    if st.checkbox('Try it yourself!'):
+        ### input text
+        default = "Type something"
+        user_input = st.text_area("Try it yourself", default)
+        to_predict = pd.DataFrame([user_input])
+        #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
+        #st.write("I see you are feeling ", response[0])
 
 
-### input text
-default = "Type something"
-user_input = st.text_area("label goes here", default)
-to_predict = pd.DataFrame(user_input)
-response = pipeline.predict(to_predict) # depends how we trigger the prediction
-st.write("I see you are feeling ", response[0])
+if __name__ == "__main__":
+    main()

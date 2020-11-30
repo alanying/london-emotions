@@ -13,6 +13,7 @@ BUCKET_NAME = "wagon-ml-london-emotions"
 # gcp location of training dataset
 BUCKET_TRAIN_DATA_PATH = "data/emotion_data.csv"
 WORD2VEC_PATH = "data/wiki-news-300d-1M.vec"
+REVIEW_PATH = 'data/prediction.csv'
 
 # will store the packages uploaded to GCP for the training
 BUCKET_TRAINING_FOLDER = "trainings"

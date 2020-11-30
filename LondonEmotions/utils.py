@@ -1,6 +1,7 @@
 import time
 from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
 from tensorflow.keras.models import Sequential, Model
+from tensorflow.python.lib.io import file_io
 import numpy as np
 
 def simple_time_tracker(method):
@@ -20,7 +21,7 @@ def simple_time_tracker(method):
 def create_embedding_matrix(filepath, word_index, embedding_dim):
     vocab_size = len(word_index) + 1  # Adding again 1 because of reserved 0 index
     embedding_matrix = np.zeros((vocab_size, embedding_dim))
-    with open(filepath) as f:
+    with file_io.FileIO(filepath, mode='r') as f:
         for line in f:
             word, *vector = line.split()
             if word in word_index:
