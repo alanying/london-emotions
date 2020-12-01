@@ -1,24 +1,3 @@
-#london central 51.50722,-0.1275
-
-#map styles
-# mapbox://styles/mapbox/streets-v11
-# mapbox://styles/mapbox/outdoors-v11
-# mapbox://styles/mapbox/light-v10
-# mapbox://styles/mapbox/dark-v10
-# mapbox://styles/mapbox/satellite-v9
-# mapbox://styles/mapbox/satellite-streets-v11
-
-##########################################################
-#          Reminder for integration
-##########################################################
-# change key: #updatekey
-# -import the packge
-# -update csv, dataframe output from the model
-# -update all dataframes
-# -update how we trigger the model prediction
-#
-# can try to improve performance by process df per map?
-##########################################################
 
 import LondonEmotions  #updatekey
 import streamlit as st
@@ -43,6 +22,46 @@ def main():
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
+    # grab top 5 place_id's and convert to dataframe
+    joy_df = data[data['emotion']=='joy'] #
+    joyest = joy_df['place_id'].value_counts().index.tolist()[:3]
+    top_joy_1 = joy_df.loc[(joy_df['place_id']==joyest[0])][:1]
+    top_joy_2 = joy_df.loc[(joy_df['place_id']==joyest[1])][:1]
+    top_joy_3 = joy_df.loc[(joy_df['place_id']==joyest[2])][:1]
+    joy_df = pd.concat([top_joy_1, top_joy_2, top_joy_3])
+
+    sad_df = data[data['emotion']=='sad']
+    saddest = sad_df['place_id'].value_counts().index.tolist()[:3]
+    top_sad_1 = sad_df.loc[(sad_df['place_id']==saddest[0])][:1]
+    top_sad_2 = sad_df.loc[(sad_df['place_id']==saddest[1])][:1]
+    top_sad_3 = sad_df.loc[(sad_df['place_id']==saddest[2])][:1]
+    sad_df = pd.concat([top_sad_1, top_sad_2, top_sad_3])
+
+    worry_df = data[data['emotion']=='worry']
+    full_worry_df = worry_df   # for a combine heatmap
+    worriest = worry_df['place_id'].value_counts().index.tolist()[:3]
+    top_worry_1 = worry_df.loc[(worry_df['place_id']==worriest[0])][:1]
+    top_worry_2 = worry_df.loc[(worry_df['place_id']==worriest[1])][:1]
+    top_worry_3 = worry_df.loc[(worry_df['place_id']==worriest[2])][:1]
+    worry_df = pd.concat([top_worry_1, top_worry_2, top_worry_3])
+
+    anger_df = data[data['emotion']=='anger']
+    full_anger_df = anger_df   # for a combine heatmap
+    angriest = anger_df['place_id'].value_counts().index.tolist()[:3]
+    top_anger_1 = anger_df.loc[(anger_df['place_id']==angriest[0])][:1]
+    top_anger_2 = anger_df.loc[(anger_df['place_id']==angriest[1])][:1]
+    top_anger_3 = anger_df.loc[(anger_df['place_id']==angriest[2])][:1]
+    anger_df = pd.concat([top_anger_1, top_anger_2, top_anger_3])
+
+    full_anger_worry_df = pd.concat([full_worry_df, full_anger_df])   # for a combine heatmap
+
+    neutral_df = data[data['emotion']=='neutral']
+    neutralist = neutral_df['place_id'].value_counts().index.tolist()[:3]
+    top_neutral_1 = neutral_df.loc[(neutral_df['place_id']==neutralist[0])][:1]
+    top_neutral_2 = neutral_df.loc[(neutral_df['place_id']==neutralist[1])][:1]
+    top_neutral_3 = neutral_df.loc[(neutral_df['place_id']==neutralist[2])][:1]
+    neutral_df = pd.concat([top_neutral_1, top_neutral_2, top_neutral_3])
+
     # define emoji
     JOY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/joy_gabpby.png"
     SAD_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/sad_icpf1w.png"
@@ -55,34 +74,27 @@ def main():
     anger_icon = {"url": ANGER_URL, "width": 242, "height": 242, "anchorY": 242,}
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
-    # split dataframe to emotions
-    joy_df = data[data['emotion']=='joy'] #updatekey
+    # define emoji
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
 
-    sad_df = data[data['emotion']=='sad']  #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
 
-    worry_df = data[data['emotion']=='worry']  #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
 
-    anger_df = data[data['emotion']=='anger']  #updatekey
     anger_df["emoji"] = None
     for i in anger_df.index:
         anger_df["emoji"][i] = anger_icon
 
-    neutral_df = data[data['emotion']=='neutral']  #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
         neutral_df["emoji"][i] = neutral_icon
 
-    # analysis = st.sidebar.selectbox("Choose your map", ["Data spread", "All-in-one", "Joy", "Sad", "Worry", "Neutral" "Unknown?!"])
-    # if analysis == "Data spread":
     if st.checkbox('Data spread'):
         st.header("Dots on the map")
         st.markdown("this is a placeholder text")
@@ -141,46 +153,19 @@ def main():
             ],
         ))
 
-    if st.checkbox('joy'):
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/dark-v10',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                   'HexagonLayer',
-                   data=data,     #updatekey
-                   get_position='[lon, lat]',
-                   radius=200,
-                   elevation_scale=8,
-                   elevation_range=[0, 2000],
-                   get_fill_color='[0, 128, 255, 160]',
-                   #pickable=True,
-                   extruded=True,
-                ),
-                pdk.Layer(
-                    'ScatterplotLayer',
-                    data=data,     #updatekey
-                    get_position='[lon, lat]',
-                    get_color='[200, 30, 0, 160]',
-                    # get_color='[0, 128, 255, 160]',
-                    get_radius=200,
-                ),
-            ],
-        ))
-
         ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
         joyest = joy_df['place_id'].value_counts().index.tolist()[0]
         address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
         link = f'[Let\'s find out the most joyful place in London]({address})'
         st.markdown(link, unsafe_allow_html=True)
 
+        sadest = sad_df['place_id'].value_counts().index.tolist()[0]
+        address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
+        link = f'[Let\'s find out the most depressive place in London]({address})'
+        st.markdown(link, unsafe_allow_html=True)
 
-    if st.checkbox('Sad'):
+
+    if st.checkbox('Anger'):
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
@@ -189,21 +174,18 @@ def main():
                 zoom=9,
                 pitch=50,
             ),
+
             layers=[
                 pdk.Layer(
                     'HeatmapLayer',
-                    data=data,     #updatekey
+                    data=full_anger_worry_df,
+                    opacity=0.5,
                     get_position='[lon, lat]',
                     get_color='[0, 128, 255, 160]',
                     get_radius=100,
                 ),
             ],
         ))
-        sadest = sad_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
-        link = f'[Let\'s find out the most depressive place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
-
 
     if st.checkbox("Guess my mood"):
         # take user input
