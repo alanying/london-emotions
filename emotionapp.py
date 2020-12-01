@@ -37,12 +37,8 @@ mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
 def main():
     ### Dataframe must be loaded before any maps
-    # data_for_static = pd.read_csv('raw_data/pred_testset.csv') #updatekey
-    # data_for_static.rename(columns={'lng':'lon'}, inplace=True)
-    # data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
-    # data = data.T
     file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
-    data = pd.read_csv(file_path) #updatekey
+    data = pd.read_csv(file_path) #updatekey predicted_reviews
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
@@ -59,31 +55,26 @@ def main():
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
     # split dataframe to emotions
-    #joy_df = data[:30]
     joy_df = data[data['emotion']=='joy'] #updatekey
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
 
-    #sad_df = data[400:430]
     sad_df = data[data['emotion']=='sad']  #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
 
-    #worry_df = data[800:830]
     worry_df = data[data['emotion']=='worry']  #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
 
-    #anger_df = data[1200:1230] #
     anger_df = data[data['emotion']=='anger']  #updatekey
     anger_df["emoji"] = None
     for i in anger_df.index:
         anger_df["emoji"][i] = anger_icon
 
-    #neutral_df = data[1600:1630]
     neutral_df = data[data['emotion']=='neutral']  #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
@@ -94,7 +85,7 @@ def main():
     if st.checkbox('Data spread'):
         st.header("Dots on the map")
         st.markdown("this is a placeholder text")
-        st.map(data=data_for_static)
+        st.map(data=data)
 
     if st.checkbox('All-in-one'):
         st.pydeck_chart(pdk.Deck(
@@ -149,85 +140,74 @@ def main():
             ],
         ))
 
-    # if st.checkbox('joy'):
-    #     st.pydeck_chart(pdk.Deck(
-    #         map_style='mapbox://styles/mapbox/dark-v10',
-    #         initial_view_state=pdk.ViewState(
-    #             latitude=51.50722,
-    #             longitude=-0.1275,
-    #             zoom=9,
-    #             pitch=50,
-    #         ),
-    #         layers=[
-    #             pdk.Layer(
-    #                'HexagonLayer',
-    #                data=data,     #updatekey
-    #                get_position='[lon, lat]',
-    #                radius=200,
-    #                elevation_scale=8,
-    #                elevation_range=[0, 2000],
-    #                get_fill_color='[0, 128, 255, 160]',
-    #                #pickable=True,
-    #                extruded=True,
-    #             ),
-    #             pdk.Layer(
-    #                 'ScatterplotLayer',
-    #                 data=data,     #updatekey
-    #                 get_position='[lon, lat]',
-    #                 get_color='[200, 30, 0, 160]',
-    #                 # get_color='[0, 128, 255, 160]',
-    #                 get_radius=200,
-    #             ),
-    #         ],
-    #     ))
+    if st.checkbox('joy'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/dark-v10',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                   'HexagonLayer',
+                   data=data,     #updatekey
+                   get_position='[lon, lat]',
+                   radius=200,
+                   elevation_scale=8,
+                   elevation_range=[0, 2000],
+                   get_fill_color='[0, 128, 255, 160]',
+                   #pickable=True,
+                   extruded=True,
+                ),
+                pdk.Layer(
+                    'ScatterplotLayer',
+                    data=data,     #updatekey
+                    get_position='[lon, lat]',
+                    get_color='[200, 30, 0, 160]',
+                    # get_color='[0, 128, 255, 160]',
+                    get_radius=200,
+                ),
+            ],
+        ))
 
-    #     ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
-    #     joyest = joy_df['place_id'].value_counts().index.tolist()[0]
-    #     address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
-    #     link = f'[Let\'s find out the most joyful place in London]({address})'
-    #     st.markdown(link, unsafe_allow_html=True)
-
-
-    # if st.checkbox('Sad'):
-    #     st.pydeck_chart(pdk.Deck(
-    #         map_style='mapbox://styles/mapbox/dark-v10',
-    #         initial_view_state=pdk.ViewState(
-    #             latitude=51.50722,
-    #             longitude=-0.1275,
-    #             zoom=9,
-    #             pitch=50,
-    #         ),
-    #         layers=[
-    #             pdk.Layer(
-    #                 'HeatmapLayer',
-    #                 data=data,     #updatekey
-    #                 get_position='[lon, lat]',
-    #                 get_color='[0, 128, 255, 160]',
-    #                 get_radius=100,
-    #             ),
-    #         ],
-    #     ))
-    #     sadest = sad_df['place_id'].value_counts().index.tolist()[0]
-    #     address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
-    #     link = f'[Let\'s find out the most depressive place in London]({address})'
-    #     st.markdown(link, unsafe_allow_html=True)
+        ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
+        joyest = joy_df['place_id'].value_counts().index.tolist()[0]
+        address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
+        link = f'[Let\'s find out the most joyful place in London]({address})'
+        st.markdown(link, unsafe_allow_html=True)
 
 
-    # if st.checkbox('Try it yourself!'):
-    #     ### input text
-    #     default = "Type something"
-    #     user_input = st.text_area("Try it yourself", default)
-    #     to_predict = pd.DataFrame([user_input])
-    #     #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
-    #     #st.write("I see you are feeling ", response[0])
-    #     X = pd.DataFrame(to_predict)
-    #     res = pipeline.predict(X[COLS])
-    #     st.write("💸 money money money", res[0])
+    if st.checkbox('Sad'):
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/dark-v10',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers=[
+                pdk.Layer(
+                    'HeatmapLayer',
+                    data=data,     #updatekey
+                    get_position='[lon, lat]',
+                    get_color='[0, 128, 255, 160]',
+                    get_radius=100,
+                ),
+            ],
+        ))
+        sadest = sad_df['place_id'].value_counts().index.tolist()[0]
+        address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
+        link = f'[Let\'s find out the most depressive place in London]({address})'
+        st.markdown(link, unsafe_allow_html=True)
 
-    if st.checkbox('Predict text'):
+
+    if st.checkbox("Guess my mood"):
         # take user input
         default = "Type something"
-        text = st.text_area("Try it yourself", default)
+        text = st.text_area("Talk to me", default)
         text_df = {
             'Text': [text]
         }
@@ -238,7 +218,7 @@ def main():
         text_value = clean_text['tokenized_text']
 
         # load tokenizer locally
-        with file_io.FileIO('models_tokenizer_model_tokenizer', 'rb') as handle:
+        with file_io.FileIO('downloads/models_tokenizer_model_tokenizer', 'rb') as handle:
             tokenizer = pickle.load(handle)
 
         # numericalise user input text
@@ -249,7 +229,7 @@ def main():
         text_pad = pad_sequences(sequence_text, maxlen=max_seq_len)
 
         # prediction
-        model = load_model('models_emotions_v2_saved_model.pb')
+        model = load_model('downloads/models_emotions_v2_saved_model.pb')
         preds = model.predict(text_pad)
 
         # prep results for presentation
