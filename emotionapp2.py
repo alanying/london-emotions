@@ -11,6 +11,7 @@ from tensorflow.keras.models import load_model
 import pickle
 from tensorflow.python.lib.io import file_io
 
+
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
@@ -21,6 +22,15 @@ def main():
     # https://commons.wikimedia.org/wiki/Emoji
     # https://github.com/caiyongji/emoji-list
     ###############################################################################
+    page_bg_img = '''
+    <style>
+    body {
+    background-image: url("https://wallpapercave.com/wp/wp2610923.jpg");
+    background-size: cover;
+    }
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
 
     ### Dataframe must be loaded before any maps
     data = pd.read_csv("streamlit_prep/predicted_reviews.csv")
@@ -127,6 +137,12 @@ def main():
 
         st.write(" ")
 
+        expander = st.beta_expander("The full emotion map suppose to look like......")
+        expander.image("streamlit_prep/capture.png", use_column_width=True)
+
+        st.write(" ")
+        st.write("_____________________________________________________________")
+
         if st.button('Very emotional spots'):
             st.write("Top 3 spots for each emotions")
             st.pydeck_chart(pdk.Deck(
@@ -194,7 +210,7 @@ def main():
 
 
     if menu == "Watchout!":
-        st.write("Angry & Worry at the same time!")
+        st.header("Angry & Worry at the same time!")
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
@@ -230,8 +246,9 @@ def main():
 
     if menu == "Guess my mood":
         # take user input
+        st.header("Try it out, talk to me.")
         default = " "
-        text = st.text_area("Try it out, talk to me.", default)
+        text = st.text_area(" ", default)
         text_df = {
             'Text': [text]
         }
@@ -264,11 +281,11 @@ def main():
         sad = str(round(preds[0][4]*100,2))
 
         # presentation
-        st.write(f":blush:  Joy: {joy}%")
-        st.write(f":worried:  Sad: {sad}%")
-        st.write(f":fearful:  Worry: {worry}%")
-        st.write(f":sunglasses:  Neutral: {neutral}%")
-        st.write(f":rage:  Angry: {angry}%")
+        st.subheader(f":blush:  Joy: {joy}%")
+        st.subheader(f":worried:  Sad: {sad}%")
+        st.subheader(f":fearful:  Worry: {worry}%")
+        st.subheader(f":sunglasses:  Neutral: {neutral}%")
+        st.subheader(f":rage:  Angry: {angry}%")
 
 if __name__ == "__main__":
     main()
