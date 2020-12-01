@@ -26,18 +26,19 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 from LondonEmotions.params import BUCKET_NAME, PRETEST_PATH
+from LondonEmotions.data import clean_data
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
+import pickle
+from tensorflow.python.lib.io import file_io
 
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
 def main():
     ### Dataframe must be loaded before any maps
-    # data_for_static = pd.read_csv('raw_data/pred_testset.csv') #updatekey
-    # data_for_static.rename(columns={'lng':'lon'}, inplace=True)
-    # data = pd.DataFrame([data_for_static['lat'], data_for_static['lon']])
-    # data = data.T
     file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
-    data = pd.read_csv(file_path) #updatekey
+    data = pd.read_csv(file_path) #updatekey predicted_reviews
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
@@ -54,31 +55,26 @@ def main():
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
     # split dataframe to emotions
-    #joy_df = data[:30]
     joy_df = data[data['emotion']=='joy'] #updatekey
     joy_df["emoji"] = None
     for i in joy_df.index:
         joy_df["emoji"][i] = joy_icon
 
-    #sad_df = data[400:430]
     sad_df = data[data['emotion']=='sad']  #updatekey
     sad_df["emoji"] = None
     for i in sad_df.index:
         sad_df["emoji"][i] = sad_icon
 
-    #worry_df = data[800:830]
     worry_df = data[data['emotion']=='worry']  #updatekey
     worry_df["emoji"] = None
     for i in worry_df.index:
         worry_df["emoji"][i] = worry_icon
 
-    #anger_df = data[1200:1230] #
     anger_df = data[data['emotion']=='anger']  #updatekey
     anger_df["emoji"] = None
     for i in anger_df.index:
         anger_df["emoji"][i] = anger_icon
 
-    #neutral_df = data[1600:1630]
     neutral_df = data[data['emotion']=='neutral']  #updatekey
     neutral_df["emoji"] = None
     for i in neutral_df.index:
@@ -89,7 +85,7 @@ def main():
     if st.checkbox('Data spread'):
         st.header("Dots on the map")
         st.markdown("this is a placeholder text")
-        st.map(data=data_for_static)
+        st.map(data=data)
 
     if st.checkbox('All-in-one'):
         st.pydeck_chart(pdk.Deck(
@@ -144,7 +140,6 @@ def main():
             ],
         ))
 
-    # if analysis == "joy":
     if st.checkbox('joy'):
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
@@ -183,7 +178,7 @@ def main():
         link = f'[Let\'s find out the most joyful place in London]({address})'
         st.markdown(link, unsafe_allow_html=True)
 
-    # if analysis == "Sad":
+
     if st.checkbox('Sad'):
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
@@ -208,35 +203,48 @@ def main():
         link = f'[Let\'s find out the most depressive place in London]({address})'
         st.markdown(link, unsafe_allow_html=True)
 
-    if st.checkbox('Neutral'):
-        # JOY_URL="https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/satellite-streets-v11',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                    type="IconLayer",
-                    data=neutral_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-            ],
-        ))
 
-    if st.checkbox('Try it yourself!'):
-        ### input text
+    if st.checkbox("Guess my mood"):
+        # take user input
         default = "Type something"
-        user_input = st.text_area("Try it yourself", default)
-        to_predict = pd.DataFrame([user_input])
-        #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
-        #st.write("I see you are feeling ", response[0])
+        text = st.text_area("Talk to me", default)
+        text_df = {
+            'Text': [text]
+        }
+
+        # convert user input to DF and clean
+        text_df = pd.DataFrame(text_df)
+        clean_text = clean_data(text_df)
+        text_value = clean_text['tokenized_text']
+
+        # load tokenizer locally
+        with file_io.FileIO('downloads/models_tokenizer_model_tokenizer', 'rb') as handle:
+            tokenizer = pickle.load(handle)
+
+        # numericalise user input text
+        max_seq_len = 300
+        index_of_words = tokenizer.word_index
+        vocab_size = len(index_of_words) + 1
+        sequence_text = tokenizer.texts_to_sequences(text_value)
+        text_pad = pad_sequences(sequence_text, maxlen=max_seq_len)
+
+        # prediction
+        model = load_model('downloads/models_emotions_v2_saved_model.pb')
+        preds = model.predict(text_pad)
+
+        # prep results for presentation
+        angry = str(round(preds[0][0]*100,2))
+        joy = str(round(preds[0][1]*100,2))
+        worry = str(round(preds[0][2]*100,2))
+        neutral = str(round(preds[0][3]*100,2))
+        sad = str(round(preds[0][4]*100,2))
+
+        # presentation
+        st.write(f"Joy: {joy}%")
+        st.write(f"Worry: {worry}%")
+        st.write(f"Sad: {sad}%")
+        st.write(f"Neutral: {neutral}%")
+        st.write(f"Angry: {angry}%")
 
 
 if __name__ == "__main__":
