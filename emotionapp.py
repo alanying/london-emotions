@@ -26,6 +26,11 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 from LondonEmotions.params import BUCKET_NAME, PRETEST_PATH
+from LondonEmotions.data import clean_data
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
+import pickle
+from tensorflow.python.lib.io import file_io
 
 import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
@@ -144,99 +149,122 @@ def main():
             ],
         ))
 
-    # if analysis == "joy":
-    if st.checkbox('joy'):
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/dark-v10',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                   'HexagonLayer',
-                   data=data,     #updatekey
-                   get_position='[lon, lat]',
-                   radius=200,
-                   elevation_scale=8,
-                   elevation_range=[0, 2000],
-                   get_fill_color='[0, 128, 255, 160]',
-                   #pickable=True,
-                   extruded=True,
-                ),
-                pdk.Layer(
-                    'ScatterplotLayer',
-                    data=data,     #updatekey
-                    get_position='[lon, lat]',
-                    get_color='[200, 30, 0, 160]',
-                    # get_color='[0, 128, 255, 160]',
-                    get_radius=200,
-                ),
-            ],
-        ))
+    # if st.checkbox('joy'):
+    #     st.pydeck_chart(pdk.Deck(
+    #         map_style='mapbox://styles/mapbox/dark-v10',
+    #         initial_view_state=pdk.ViewState(
+    #             latitude=51.50722,
+    #             longitude=-0.1275,
+    #             zoom=9,
+    #             pitch=50,
+    #         ),
+    #         layers=[
+    #             pdk.Layer(
+    #                'HexagonLayer',
+    #                data=data,     #updatekey
+    #                get_position='[lon, lat]',
+    #                radius=200,
+    #                elevation_scale=8,
+    #                elevation_range=[0, 2000],
+    #                get_fill_color='[0, 128, 255, 160]',
+    #                #pickable=True,
+    #                extruded=True,
+    #             ),
+    #             pdk.Layer(
+    #                 'ScatterplotLayer',
+    #                 data=data,     #updatekey
+    #                 get_position='[lon, lat]',
+    #                 get_color='[200, 30, 0, 160]',
+    #                 # get_color='[0, 128, 255, 160]',
+    #                 get_radius=200,
+    #             ),
+    #         ],
+    #     ))
 
-        ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
-        joyest = joy_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
-        link = f'[Let\'s find out the most joyful place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
+    #     ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
+    #     joyest = joy_df['place_id'].value_counts().index.tolist()[0]
+    #     address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
+    #     link = f'[Let\'s find out the most joyful place in London]({address})'
+    #     st.markdown(link, unsafe_allow_html=True)
 
-    # if analysis == "Sad":
-    if st.checkbox('Sad'):
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/dark-v10',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                    'HeatmapLayer',
-                    data=data,     #updatekey
-                    get_position='[lon, lat]',
-                    get_color='[0, 128, 255, 160]',
-                    get_radius=100,
-                ),
-            ],
-        ))
-        sadest = sad_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
-        link = f'[Let\'s find out the most depressive place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
 
-    if st.checkbox('Neutral'):
-        # JOY_URL="https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/satellite-streets-v11',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                    type="IconLayer",
-                    data=neutral_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-            ],
-        ))
+    # if st.checkbox('Sad'):
+    #     st.pydeck_chart(pdk.Deck(
+    #         map_style='mapbox://styles/mapbox/dark-v10',
+    #         initial_view_state=pdk.ViewState(
+    #             latitude=51.50722,
+    #             longitude=-0.1275,
+    #             zoom=9,
+    #             pitch=50,
+    #         ),
+    #         layers=[
+    #             pdk.Layer(
+    #                 'HeatmapLayer',
+    #                 data=data,     #updatekey
+    #                 get_position='[lon, lat]',
+    #                 get_color='[0, 128, 255, 160]',
+    #                 get_radius=100,
+    #             ),
+    #         ],
+    #     ))
+    #     sadest = sad_df['place_id'].value_counts().index.tolist()[0]
+    #     address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
+    #     link = f'[Let\'s find out the most depressive place in London]({address})'
+    #     st.markdown(link, unsafe_allow_html=True)
 
-    if st.checkbox('Try it yourself!'):
-        ### input text
+
+    # if st.checkbox('Try it yourself!'):
+    #     ### input text
+    #     default = "Type something"
+    #     user_input = st.text_area("Try it yourself", default)
+    #     to_predict = pd.DataFrame([user_input])
+    #     #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
+    #     #st.write("I see you are feeling ", response[0])
+    #     X = pd.DataFrame(to_predict)
+    #     res = pipeline.predict(X[COLS])
+    #     st.write("💸 money money money", res[0])
+
+    if st.checkbox('Predict text'):
+        # take user input
         default = "Type something"
-        user_input = st.text_area("Try it yourself", default)
-        to_predict = pd.DataFrame([user_input])
-        #response = pipeline.predict(to_predict) # depends how we trigger the prediction #updatekey
-        #st.write("I see you are feeling ", response[0])
+        text = st.text_area("Try it yourself", default)
+        text_df = {
+            'Text': [text]
+        }
+
+        # convert user input to DF and clean
+        text_df = pd.DataFrame(text_df)
+        clean_text = clean_data(text_df)
+        text_value = clean_text['tokenized_text']
+
+        # load tokenizer locally
+        with file_io.FileIO('models_tokenizer_model_tokenizer', 'rb') as handle:
+            tokenizer = pickle.load(handle)
+
+        # numericalise user input text
+        max_seq_len = 300
+        index_of_words = tokenizer.word_index
+        vocab_size = len(index_of_words) + 1
+        sequence_text = tokenizer.texts_to_sequences(text_value)
+        text_pad = pad_sequences(sequence_text, maxlen=max_seq_len)
+
+        # prediction
+        model = load_model('models_emotions_v2_saved_model.pb')
+        preds = model.predict(text_pad)
+
+        # prep results for presentation
+        angry = str(round(preds[0][0]*100,2))
+        joy = str(round(preds[0][1]*100,2))
+        worry = str(round(preds[0][2]*100,2))
+        neutral = str(round(preds[0][3]*100,2))
+        sad = str(round(preds[0][4]*100,2))
+
+        # presentation
+        st.write(f"Joy: {joy}%")
+        st.write(f"Worry: {worry}%")
+        st.write(f"Sad: {sad}%")
+        st.write(f"Neutral: {neutral}%")
+        st.write(f"Angry: {angry}%")
 
 
 if __name__ == "__main__":
