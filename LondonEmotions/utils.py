@@ -1,6 +1,7 @@
 import time
-from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, Embedding
+from tensorflow.keras.layers import Dense, Dropout, Reshape, Flatten, concatenate, Input, Conv1D, GlobalMaxPooling1D, MaxPooling1D, Embedding, LSTM, Bidirectional
 from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras import optimizers
 from tensorflow.python.lib.io import file_io
 import numpy as np
 
@@ -47,6 +48,8 @@ def instantiate_model(embedd_matrix, max_seq_len, vocab_size, embed_num_dims):
     model.add(GlobalMaxPooling1D())
     model.add(Dense(256, activation='relu'))
     model.add(Dense(5, activation='softmax'))
+
+
     model.compile(loss = 'categorical_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
 
     return model

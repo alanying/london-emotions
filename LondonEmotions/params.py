@@ -2,7 +2,7 @@
 
 # model folder name (will contain the folders for all trained model versions)
 MODEL_NAME = "emotions"
-MODEL_VERSION = "v2"
+MODEL_VERSION = "v3"
 
 # gcp project
 PROJECT_ID = "london-emotions"
@@ -11,7 +11,7 @@ PROJECT_ID = "london-emotions"
 BUCKET_NAME = "wagon-ml-london-emotions"
 
 # gcp location of training dataset
-BUCKET_TRAIN_DATA_PATH = "data/emotion_data.csv"
+BUCKET_TRAIN_DATA_PATH = "data/data_train.csv"
 WORD2VEC_PATH = "data/wiki-news-300d-1M.vec"
 REVIEW_PATH = 'data/prediction.csv'
 PRETEST_PATH = "data/pred_testset.csv"
@@ -32,3 +32,5 @@ FILENAME="trainer"
 # job
 JOB_NAME = "emotion_training_pipeline_$(shell date + '%Y%m%d_%H%M%S')"
 
+LOCAL=False
+PREDICT_LOCAL=True
