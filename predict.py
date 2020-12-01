@@ -9,7 +9,7 @@ from tensorflow.python.lib.io import file_io
 from tensorflow.keras.models import load_model
 import pickle
 
-def get_review_data(local=True):
+def get_review_data(local=False):
     if local:
         path = 'raw_data/prediction.csv'
     else:
@@ -91,4 +91,4 @@ def predict_reviews(local=True):
     df.to_csv('raw_data/review_predictions.csv')
 
 if __name__ == '__main__':
-    predict_reviews(local=True)
+    predict_reviews(local=False)
