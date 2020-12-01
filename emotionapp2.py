@@ -15,9 +15,15 @@ import os
 mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
 def main():
+
+    ###############################################################################
+    #   Dataframe and emoji setup
+    # https://commons.wikimedia.org/wiki/Emoji
+    # https://github.com/caiyongji/emoji-list
+    ###############################################################################
+
     ### Dataframe must be loaded before any maps
-    # file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
-    data = pd.read_csv("streamlit_prep/predicted_reviews.csv") #updatekey predicted_reviews
+    data = pd.read_csv("streamlit_prep/predicted_reviews.csv")
     data = data.drop(columns=['manually_added_emotion', 'joy, sad, worry, anger, neutral'])
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
@@ -74,98 +80,121 @@ def main():
     anger_icon = {"url": ANGER_URL, "width": 242, "height": 242, "anchorY": 242,}
     neutral_icon = {"url": NEUTRAL_URL, "width": 242, "height": 242, "anchorY": 242,}
 
-    # define emoji
-    joy_df["emoji"] = None
-    for i in joy_df.index:
-        joy_df["emoji"][i] = joy_icon
 
-    sad_df["emoji"] = None
-    for i in sad_df.index:
-        sad_df["emoji"][i] = sad_icon
+    ###############################################################################
+    #   Page presentation starts
+    ###############################################################################
 
-    worry_df["emoji"] = None
-    for i in worry_df.index:
-        worry_df["emoji"][i] = worry_icon
+    # Define the sidebar
+    st.sidebar.title("London Emotions")
+    menu = st.sidebar.selectbox("Menu", ["Top spots", "Watchout!", "Guess my mood"])
+    st.sidebar.write(" ")
+    st.sidebar.write(" ")
+    st.sidebar.write("Legends:")
+    st.sidebar.markdown(":blush:   Happy")
+    st.sidebar.markdown(":worried:   Sad")
+    st.sidebar.markdown(":fearful:   Worry")
+    st.sidebar.markdown(":rage:   Angry")
+    st.sidebar.markdown(":sunglasses:   Neutral")
 
-    anger_df["emoji"] = None
-    for i in anger_df.index:
-        anger_df["emoji"][i] = anger_icon
 
-    neutral_df["emoji"] = None
-    for i in neutral_df.index:
-        neutral_df["emoji"][i] = neutral_icon
 
-    if st.checkbox('Data spread'):
+    if menu == "Top spots":
+        # define emoji
+        joy_df["emoji"] = None
+        for i in joy_df.index:
+            joy_df["emoji"][i] = joy_icon
+
+        sad_df["emoji"] = None
+        for i in sad_df.index:
+            sad_df["emoji"][i] = sad_icon
+
+        worry_df["emoji"] = None
+        for i in worry_df.index:
+            worry_df["emoji"][i] = worry_icon
+
+        anger_df["emoji"] = None
+        for i in anger_df.index:
+            anger_df["emoji"][i] = anger_icon
+
+        neutral_df["emoji"] = None
+        for i in neutral_df.index:
+            neutral_df["emoji"][i] = neutral_icon
+
         st.header("Dots on the map")
-        st.markdown("this is a placeholder text")
+        st.markdown("Data collection spread across London.")
         st.map(data=data)
 
-    if st.checkbox('All-in-one'):
-        st.pydeck_chart(pdk.Deck(
-            map_style='mapbox://styles/mapbox/streets-v11',
-            initial_view_state=pdk.ViewState(
-                latitude=51.50722,
-                longitude=-0.1275,
-                zoom=9,
-                pitch=50,
-            ),
-            layers=[
-                pdk.Layer(
-                    type="IconLayer",
-                    data=joy_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=sad_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=worry_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=anger_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-                pdk.Layer(
-                    type="IconLayer",
-                    data=neutral_df,
-                    get_icon="emoji",
-                    get_size=3,
-                    size_scale=15,
-                    get_position=["lon", "lat"],
-                 ),
-            ],
-        ))
+        st.write(" ")
 
-        ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
-        joyest = joy_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
-        link = f'[Let\'s find out the most joyful place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
+        if st.button('Very emotional spots'):
+            st.write("Top 3 spots for each emotions")
+            st.pydeck_chart(pdk.Deck(
+                map_style='mapbox://styles/mapbox/streets-v11',
+                initial_view_state=pdk.ViewState(
+                    latitude=51.50722,
+                    longitude=-0.1275,
+                    zoom=9,
+                    pitch=50,
+                ),
+                layers=[
+                    pdk.Layer(
+                        type="IconLayer",
+                        data=joy_df,
+                        get_icon="emoji",
+                        get_size=3,
+                        size_scale=15,
+                        get_position=["lon", "lat"],
+                     ),
+                    pdk.Layer(
+                        type="IconLayer",
+                        data=sad_df,
+                        get_icon="emoji",
+                        get_size=3,
+                        size_scale=15,
+                        get_position=["lon", "lat"],
+                     ),
+                    pdk.Layer(
+                        type="IconLayer",
+                        data=worry_df,
+                        get_icon="emoji",
+                        get_size=3,
+                        size_scale=15,
+                        get_position=["lon", "lat"],
+                     ),
+                    pdk.Layer(
+                        type="IconLayer",
+                        data=anger_df,
+                        get_icon="emoji",
+                        get_size=3,
+                        size_scale=15,
+                        get_position=["lon", "lat"],
+                     ),
+                    pdk.Layer(
+                        type="IconLayer",
+                        data=neutral_df,
+                        get_icon="emoji",
+                        get_size=3,
+                        size_scale=15,
+                        get_position=["lon", "lat"],
+                     ),
+                ],
+            ))
 
-        sadest = sad_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
-        link = f'[Let\'s find out the most depressive place in London]({address})'
-        st.markdown(link, unsafe_allow_html=True)
+            ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
+            joyest = joy_df['place_id'].value_counts().index.tolist()[0]
+            address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
+            link = f'[Let\'s find out the most joyful place in London]({address})'
+            st.markdown(link, unsafe_allow_html=True)
+
+            sadest = sad_df['place_id'].value_counts().index.tolist()[0]
+            address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
+            link = f'[Let\'s find out the most depressive place in London]({address})'
+            st.markdown(link, unsafe_allow_html=True)
 
 
-    if st.checkbox('Anger'):
+    if menu == "Watchout!":
+        st.write("Angry & Worry at the same time!")
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
@@ -178,19 +207,31 @@ def main():
             layers=[
                 pdk.Layer(
                     'HeatmapLayer',
-                    data=full_anger_worry_df,
+                    data=full_worry_df,
                     opacity=0.5,
                     get_position='[lon, lat]',
                     get_color='[0, 128, 255, 160]',
                     get_radius=100,
                 ),
+                pdk.Layer(
+                   'HexagonLayer',
+                   data=full_anger_df,
+                   get_position='[lon, lat]',
+                   radius=400,
+                   elevation_scale=8,
+                   elevation_range=[0, 2000],
+                   get_fill_color='[0, 180, 180, 180]',
+                   extruded=True,
+                ),
             ],
         ))
 
-    if st.checkbox("Guess my mood"):
+
+
+    if menu == "Guess my mood":
         # take user input
-        default = "Type something"
-        text = st.text_area("Talk to me", default)
+        default = " "
+        text = st.text_area("Try it out, talk to me.", default)
         text_df = {
             'Text': [text]
         }
@@ -223,12 +264,11 @@ def main():
         sad = str(round(preds[0][4]*100,2))
 
         # presentation
-        st.write(f"Joy: {joy}%")
-        st.write(f"Worry: {worry}%")
-        st.write(f"Sad: {sad}%")
-        st.write(f"Neutral: {neutral}%")
-        st.write(f"Angry: {angry}%")
-
+        st.write(f":blush:  Joy: {joy}%")
+        st.write(f":worried:  Sad: {sad}%")
+        st.write(f":fearful:  Worry: {worry}%")
+        st.write(f":sunglasses:  Neutral: {neutral}%")
+        st.write(f":rage:  Angry: {angry}%")
 
 if __name__ == "__main__":
     main()
