@@ -157,7 +157,7 @@ def main():
         st.write(" ")
 
         expander = st.beta_expander("The full emotion map suppose to look like......")
-        expander.image("streamlit_prep/capture.png", use_column_width=True)
+        expander.image("streamlit_prep/capture.PNG", use_column_width=True)
 
         st.write(" ")
         st.write("_____________________________________________________________")
