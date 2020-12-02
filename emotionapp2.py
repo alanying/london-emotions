@@ -103,7 +103,7 @@ def main():
     st.sidebar.write("Legends:")
     st.sidebar.markdown(":blush:   Happy")
     st.sidebar.markdown(":worried:   Sad")
-    st.sidebar.markdown(":fearful:   Worry")
+    st.sidebar.markdown(":fearful:   Fear")
     st.sidebar.markdown(":rage:   Angry")
     st.sidebar.markdown(":sunglasses:   Neutral")
 
@@ -261,6 +261,10 @@ def main():
                 ),
             ],
         ))
+        angriest = anger_df['place_id'].value_counts().index.tolist()[0]
+        address = f"https://www.google.com/maps/place/?q=place_id:{angriest}"
+        link = f'[Place we should avoid in London!]({address})'
+        st.markdown(link, unsafe_allow_html=True)
 
 
 
@@ -304,7 +308,7 @@ def main():
         expander = st.beta_expander("Your mood prediction.")
         expander.subheader(f":blush:  Joy: {joy}%")
         expander.subheader(f":worried:  Sad: {sad}%")
-        expander.subheader(f":fearful:  Worry: {worry}%")
+        expander.subheader(f":fearful:  Fear: {worry}%")
         expander.subheader(f":sunglasses:  Neutral: {neutral}%")
         expander.subheader(f":rage:  Angry: {angry}%")
 
