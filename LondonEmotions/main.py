@@ -1,11 +1,10 @@
 from LondonEmotions.data import clean_data, retrieve_data
 from LondonEmotions.trainer import Trainer
-
-local = False
+from LondonEmotions.params import LOCAL
 
 default_params = dict(nrows='all',
                       upload=False,
-                      local=local,  # set to False to get data from GCP (Storage or BigQuery)
+                      local=LOCAL,  # set to False to get data from GCP (Storage or BigQuery)
                       gridsearch=False,
                       optimize=False,
                       estimator="CNN",
@@ -15,7 +14,7 @@ default_params = dict(nrows='all',
 
 if __name__ == "__main__":
     print("############  Fetching data   ############")
-    df = retrieve_data(local=local)
+    df = retrieve_data(local=LOCAL)
     print("############  Cleaning data   ############")
     df = clean_data(df)
     X = df['tokenized_text']

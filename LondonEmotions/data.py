@@ -6,6 +6,7 @@ from os.path import split
 import pandas as pd
 import datetime
 import string
+import re
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -23,7 +24,8 @@ def retrieve_data(local=True, optimize=False, **kwargs):
     # Add Client() here
     # client = storage.Client()
     if local:
-        path = "raw_data/emotion_data.csv"
+        # path = "raw_data/emotion_data.csv"
+        path = 'raw_data/data_train.csv'
     else:
         path = "gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH)
     df = pd.read_csv(path)
@@ -47,6 +49,13 @@ def clean_data(data):
     # Strip whitespace
     data['clean_text'] = data['clean_text'].apply(
         lambda x: x.strip()
+        )
+    # Remove hashtags and usernames
+    data['clean_text'] = data['clean_text'].apply(
+        lambda x: re.sub(r"(#[\d\w\.]+)", '', x)
+        )
+    data['clean_text'] = data['clean_text'].apply(
+        lambda x: re.sub(r"(@[\d\w\.]+)", '', x)
         )
     # Remove punctuation
     data['clean_text'] = data['clean_text'].apply(

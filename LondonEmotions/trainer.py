@@ -66,7 +66,6 @@ class Trainer():
         num_classes = 5
         embed_num_dims = 300
         max_seq_len = 300
-        class_names = ['joy', 'worry', 'anger', 'sad', 'neutral']
 
         sentences_train = [[_ for _ in sentence] for sentence in self.X_train]
         sentences_test = [[_ for _ in sentence] for sentence in self.X_test]
@@ -82,7 +81,7 @@ class Trainer():
         if self.local:
             filepath = 'raw_data/tokenizer.pickle'
         else:
-            filepath = 'tokenizer/tokenizer.pickle'
+            filepath = 'model_tokenizer.pickle'
         with file_io.FileIO(filepath, 'wb') as handle:
             pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -115,9 +114,9 @@ class Trainer():
         encoding = {
             'anger': 0,
             'joy': 1,
-            'worry': 2,
+            'fear': 2,
             'neutral': 3,
-            'sad': 4
+            'sadness': 4
         }
 
         y_train_enc = [encoding[x] for x in self.y_train]
@@ -136,9 +135,9 @@ class Trainer():
         embedd_matrix.shape
 
         # Train model
-        batch_size = 256
-        epochs = 4
-        es = EarlyStopping(patience=1, restore_best_weights=True)
+        batch_size = 64
+        epochs = 30
+        es = EarlyStopping(patience=3, restore_best_weights=True)
 
         model = instantiate_model(embedd_matrix, max_seq_len, vocab_size, embed_num_dims)
 
@@ -170,7 +169,7 @@ class Trainer():
     def save_model(self, upload=True, auto_remove=True):
         """Save the model into a .joblib """
         # Save to folder nlp_model on cloud machine
-        self.pipeline.save('nlp_model')
+        self.pipeline.save('saved_model.pb')
         print("model saved locally")
 
         if upload:
@@ -182,7 +181,7 @@ class Trainer():
                 MODEL_VERSION,
                 'saved_model.pb')
             blob = bucket.blob(storage_location)
-            blob.upload_from_filename(filename='nlp_model/saved_model.pb')
+            blob.upload_from_filename(filename='saved_model.pb')
             print("model saved on GCP")
 
     ### MLFlow methods
