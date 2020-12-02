@@ -261,7 +261,7 @@ def main():
                 ),
             ],
         ))
-        angriest = anger_df['place_id'].value_counts().index.tolist()[0]
+        angriest = full_anger_df['place_id'].value_counts().index.tolist()[0]
         address = f"https://www.google.com/maps/place/?q=place_id:{angriest}"
         link = f'[Place we should avoid in London!]({address})'
         st.markdown(link, unsafe_allow_html=True)
