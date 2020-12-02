@@ -133,7 +133,26 @@ def main():
 
         st.header("Data points on the map")
         st.markdown("Data collection spread across London.")
-        st.map(data=data)
+        # st.map(data=data)
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/dark-v10',
+            initial_view_state=pdk.ViewState(
+                latitude=51.50722,
+                longitude=-0.1275,
+                zoom=9,
+                pitch=50,
+            ),
+            layers = [
+                pdk.Layer(
+                    'ScatterplotLayer',
+                    data=data,     #updatekey
+                    get_position='[lon, lat]',
+                    # get_color='[200, 30, 0, 160]',
+                    get_color='[0, 128, 255, 160]',
+                    get_radius=250,
+                ),
+            ],
+        ))
 
         st.write(" ")
 
@@ -147,7 +166,7 @@ def main():
         if st.button('Very emotional spots'):
             st.write("Top 3 spots for each emotions")
             st.pydeck_chart(pdk.Deck(
-                map_style='mapbox://styles/mapbox/streets-v11',
+                map_style='mapbox://styles/mapbox/dark-v10',
                 initial_view_state=pdk.ViewState(
                     latitude=51.50722,
                     longitude=-0.1275,
@@ -211,7 +230,7 @@ def main():
 
 
     if menu == "Watchout!":
-        st.header("Angry & Worry at the same time!")
+        st.header("Angry & Fear at the same time!")
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
