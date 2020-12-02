@@ -253,7 +253,7 @@ def main():
                    'HexagonLayer',
                    data=full_anger_df,
                    get_position='[lon, lat]',
-                   radius=200,
+                   radius=150,
                    elevation_scale=8,
                    elevation_range=[0, 2000],
                    get_fill_color='[0, 180, 180, 180]',
