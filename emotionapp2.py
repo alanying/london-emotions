@@ -81,7 +81,7 @@ def main():
     # define emoji
     JOY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/joy_gabpby.png"
     SAD_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/sad_icpf1w.png"
-    WORRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/worry_rwobfs.png"
+    WORRY_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606930161/fear_iyzvsb.png"
     ANGER_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/angry_shqypp.png"
     NEUTRAL_URL="https://res.cloudinary.com/dq7pjfkgz/image/upload/v1606418659/neutral_evi6qa.png"
     joy_icon = {"url": JOY_URL, "width": 242, "height": 242, "anchorY": 242,}
