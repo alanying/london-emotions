@@ -34,7 +34,7 @@ def main():
 
     ### Dataframe must be loaded before any maps
     data = pd.read_csv("streamlit_prep/predicted_reviews.csv")
-    data = data.drop(columns=['manually_added_emotion', 'joy, sad, worry, anger, neutral'])
+    # data = data.drop(columns=['manually_added_emotion', 'joy, sad, worry, anger, neutral'])
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
@@ -46,7 +46,7 @@ def main():
     top_joy_3 = joy_df.loc[(joy_df['place_id']==joyest[2])][:1]
     joy_df = pd.concat([top_joy_1, top_joy_2, top_joy_3])
 
-    sad_df = data[data['emotion']=='sad']
+    sad_df = data[data['emotion']=='sadness']
     saddest = sad_df['place_id'].value_counts().index.tolist()[:3]
     top_sad_1 = sad_df.loc[(sad_df['place_id']==saddest[0])][:1]
     top_sad_2 = sad_df.loc[(sad_df['place_id']==saddest[1])][:1]
@@ -253,7 +253,7 @@ def main():
                    'HexagonLayer',
                    data=full_anger_df,
                    get_position='[lon, lat]',
-                   radius=400,
+                   radius=200,
                    elevation_scale=8,
                    elevation_range=[0, 2000],
                    get_fill_color='[0, 180, 180, 180]',
@@ -283,7 +283,7 @@ def main():
         text_value = clean_text['tokenized_text']
 
         # load tokenizer locally
-        with file_io.FileIO('streamlit_prep/models_tokenizer_model_tokenizer', 'rb') as handle:
+        with file_io.FileIO('streamlit_prep/model_tokenizer', 'rb') as handle:
             tokenizer = pickle.load(handle)
 
         # numericalise user input text
@@ -294,7 +294,7 @@ def main():
         text_pad = pad_sequences(sequence_text, maxlen=max_seq_len)
 
         # prediction
-        model = load_model('streamlit_prep/models_emotions_v2_saved_model.pb')
+        model = load_model('streamlit_prep/saved_model.pb')
         preds = model.predict(text_pad)
 
         # prep results for presentation
