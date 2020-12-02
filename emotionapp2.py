@@ -131,7 +131,7 @@ def main():
         for i in neutral_df.index:
             neutral_df["emoji"][i] = neutral_icon
 
-        st.header("Dots on the map")
+        st.header("Data points on the map")
         st.markdown("Data collection spread across London.")
         st.map(data=data)
 
@@ -143,6 +143,7 @@ def main():
         st.write(" ")
         st.write("_____________________________________________________________")
 
+        st.header("Top spots for each emotions")
         if st.button('Very emotional spots'):
             st.write("Top 3 spots for each emotions")
             st.pydeck_chart(pdk.Deck(
@@ -281,11 +282,12 @@ def main():
         sad = str(round(preds[0][4]*100,2))
 
         # presentation
-        st.subheader(f":blush:  Joy: {joy}%")
-        st.subheader(f":worried:  Sad: {sad}%")
-        st.subheader(f":fearful:  Worry: {worry}%")
-        st.subheader(f":sunglasses:  Neutral: {neutral}%")
-        st.subheader(f":rage:  Angry: {angry}%")
+        expander = st.beta_expander("Your mood prediction.")
+        expander.subheader(f":blush:  Joy: {joy}%")
+        expander.subheader(f":worried:  Sad: {sad}%")
+        expander.subheader(f":fearful:  Worry: {worry}%")
+        expander.subheader(f":sunglasses:  Neutral: {neutral}%")
+        expander.subheader(f":rage:  Angry: {angry}%")
 
 if __name__ == "__main__":
     main()
