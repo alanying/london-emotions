@@ -1,4 +1,4 @@
-from LondonEmotions.params import BUCKET_NAME, REVIEW_PATH
+from LondonEmotions.params import BUCKET_NAME, REVIEW_PATH, PREDICT_LOCAL
 from LondonEmotions.data import clean_data
 import pandas as pd
 import numpy as np
@@ -64,7 +64,7 @@ def predict_reviews(local=True):
     padded_reviews = process_reviews(df, local=local)
     # Load model and predict
     if local:
-        path = 'raw_data/saved_model_2.pb'
+        path = 'raw_data/saved_model.pb'
     else:
         path = "gs://{}/{}/{}/{}".format(
             'models',
@@ -81,9 +81,9 @@ def predict_reviews(local=True):
     encoding = {
         0: 'anger',
         1: 'joy',
-        2: 'worry',
+        2: 'fear',
         3: 'neutral',
-        4: 'sad'
+        4: 'sadness'
     }
     pred_series = pd.Series(preds_categorical)
     review_predictions = pred_series.map(encoding)
@@ -91,4 +91,4 @@ def predict_reviews(local=True):
     df.to_csv('raw_data/review_predictions.csv')
 
 if __name__ == '__main__':
-    predict_reviews(local=False)
+    predict_reviews(local=PREDICT_LOCAL)

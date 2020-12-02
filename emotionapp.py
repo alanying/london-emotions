@@ -25,7 +25,7 @@ import streamlit as st
 import pydeck as pdk
 import numpy as np
 import pandas as pd
-from LondonEmotions.params import BUCKET_NAME, PRETEST_PATH
+# from LondonEmotions.params import BUCKET_NAME, PRETEST_PATH
 from LondonEmotions.data import clean_data
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
@@ -37,8 +37,9 @@ mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 
 def main():
     ### Dataframe must be loaded before any maps
-    file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
-    data = pd.read_csv(file_path) #updatekey predicted_reviews
+    # file_path = "gs://{}/{}".format(BUCKET_NAME, PRETEST_PATH)
+    data = pd.read_csv("streamlit_prep/predicted_reviews.csv") #updatekey predicted_reviews
+    data = data.drop(columns=['manually_added_emotion', 'joy, sad, worry, anger, neutral'])
     data.rename(columns={'lng':'lon'}, inplace=True)
     data.fillna('nan', inplace=True)
 
@@ -218,7 +219,7 @@ def main():
         text_value = clean_text['tokenized_text']
 
         # load tokenizer locally
-        with file_io.FileIO('downloads/models_tokenizer_model_tokenizer', 'rb') as handle:
+        with file_io.FileIO('streamlit_prep/models_tokenizer_model_tokenizer', 'rb') as handle:
             tokenizer = pickle.load(handle)
 
         # numericalise user input text
@@ -229,7 +230,7 @@ def main():
         text_pad = pad_sequences(sequence_text, maxlen=max_seq_len)
 
         # prediction
-        model = load_model('downloads/models_emotions_v2_saved_model.pb')
+        model = load_model('streamlit_prep/models_emotions_v2_saved_model.pb')
         preds = model.predict(text_pad)
 
         # prep results for presentation
