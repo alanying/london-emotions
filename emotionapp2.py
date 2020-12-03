@@ -224,15 +224,15 @@ def main():
             ))
 
             ### Button for google map outer link #https://discuss.streamlit.io/t/how-to-link-a-button-to-a-webpage/1661/4
-            joyest = joy_df['place_id'].value_counts().index.tolist()[0]
-            address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
-            link = f'[Let\'s find out the most joyful place in London]({address})'
-            st.markdown(link, unsafe_allow_html=True)
+            # joyest = joy_df['place_id'].value_counts().index.tolist()[0]
+            # address = f"https://www.google.com/maps/place/?q=place_id:{joyest}"
+            # link = f'[Let\'s find out the most joyful place in London]({address})'
+            # st.markdown(link, unsafe_allow_html=True)
 
-            sadest = sad_df['place_id'].value_counts().index.tolist()[0]
-            address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
-            link = f'[Let\'s find out the most depressive place in London]({address})'
-            st.markdown(link, unsafe_allow_html=True)
+            # sadest = sad_df['place_id'].value_counts().index.tolist()[0]
+            # address = f"https://www.google.com/maps/place/?q=place_id:{sadest}"
+            # link = f'[Let\'s find out the most depressive place in London]({address})'
+            # st.markdown(link, unsafe_allow_html=True)
 
 
     if menu == "Watchout!":
