@@ -18,19 +18,25 @@ mapbox_api_key = os.getenv('MAPBOX_API_KEY')
 def main():
 
     ###############################################################################
-    #   Dataframe and emoji setup
-    # https://commons.wikimedia.org/wiki/Emoji
-    # https://github.com/caiyongji/emoji-list
+    #   backgroud colour
+    # https://wallpapercave.com/wp/wp2610923.jpg
     ###############################################################################
+
     page_bg_img = '''
     <style>
     body {
-    background-image: url("https://wallpapercave.com/wp/wp2610923.jpg");
+    background-image: url("https://wallpapercave.com/wp/wp2903059.jpg");
     background-size: cover;
     }
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
+
+    ###############################################################################
+    #   Dataframe and emoji setup
+    # https://commons.wikimedia.org/wiki/Emoji
+    # https://github.com/caiyongji/emoji-list
+    ###############################################################################
 
     ### Dataframe must be loaded before any maps
     data = pd.read_csv("streamlit_prep/predicted_reviews.csv")
@@ -162,7 +168,7 @@ def main():
         st.write(" ")
         st.write("_____________________________________________________________")
 
-        st.header("Top spots for each emotions")
+        st.header("Top 3 spots for each emotions")
         if st.button('Very emotional spots'):
             st.write("Top 3 spots for each emotions")
             st.pydeck_chart(pdk.Deck(
@@ -230,7 +236,8 @@ def main():
 
 
     if menu == "Watchout!":
-        st.header("Angry & Fear at the same time!")
+        st.header("Anger & Fear at the same time!")
+        st.subheader("Places to avoid in london.")
         st.pydeck_chart(pdk.Deck(
             map_style='mapbox://styles/mapbox/dark-v10',
             initial_view_state=pdk.ViewState(
@@ -261,16 +268,17 @@ def main():
                 ),
             ],
         ))
-        angriest = full_anger_df['place_id'].value_counts().index.tolist()[0]
-        address = f"https://www.google.com/maps/place/?q=place_id:{angriest}"
-        link = f'[Place we should avoid in London!]({address})'
-        st.markdown(link, unsafe_allow_html=True)
+        # angriest = full_anger_df['place_id'].value_counts().index.tolist()[0]
+        # address = f"https://www.google.com/maps/place/?q=place_id:{angriest}"
+        # link = f'[Place we should avoid in London!]({address})'
+        # st.markdown(link, unsafe_allow_html=True)
 
 
 
     if menu == "Guess my mood":
         # take user input
-        st.header("Try it out, talk to me.")
+        st.header("Try it out.")
+        st.subheader("Talk to me and I will guess your mood.")
         default = " "
         text = st.text_area(" ", default)
         text_df = {
@@ -305,7 +313,7 @@ def main():
         sad = str(round(preds[0][4]*100,2))
 
         # presentation
-        expander = st.beta_expander("Your mood prediction.")
+        expander = st.beta_expander("From what you are saying, human. I sense you are feeling...")
         expander.subheader(f":blush:  Joy: {joy}%")
         expander.subheader(f":worried:  Sad: {sad}%")
         expander.subheader(f":fearful:  Fear: {worry}%")
